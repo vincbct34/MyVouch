@@ -56,7 +56,7 @@ export function ManageAction({
         <h1>Endorsement withdrawn</h1>
         <p className="sub">
           Your endorsement of {ownerName} has been removed. It will no longer
-          appear anywhere on Vouch.
+          appear anywhere on MyVouch.
         </p>
       </div>
     );

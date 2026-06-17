@@ -6,8 +6,8 @@ import path from "node:path";
 
 // Point the data layer at a throwaway database BEFORE importing it. Using a
 // dynamic import guarantees the env var is set before db.ts first connects.
-const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "vouch-test-"));
-process.env.VOUCH_DB_PATH = path.join(tmpDir, "test.db");
+const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "myvouch-test-"));
+process.env.MYVOUCH_DB_PATH = path.join(tmpDir, "test.db");
 
 const dbmod = await import("../lib/db.ts");
 const {

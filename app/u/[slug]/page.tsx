@@ -28,7 +28,7 @@ export async function generateMetadata({
 
   const title = `${owner.name} — verified endorsements`;
   const description =
-    owner.headline ?? `Verified endorsements for ${owner.name} on Vouch.`;
+    owner.headline ?? `Verified endorsements for ${owner.name} on MyVouch.`;
   const url = `${appBaseUrl()}/u/${owner.slug}`;
   // Sharing the link (LinkedIn/X) is the core flow — give it a rich unfurl.
   return {
@@ -40,7 +40,7 @@ export async function generateMetadata({
       title,
       description,
       url,
-      siteName: "Vouch",
+      siteName: "MyVouch",
     },
     twitter: {
       card: "summary_large_image",

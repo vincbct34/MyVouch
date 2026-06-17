@@ -4,10 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Vouch — a multi-user "verified endorsements" product. Each user owns a public
+MyVouch — a multi-user "verified endorsements" product. Each user owns a public
 endorsement wall at `/u/[slug]`, shares their link, collects references from
 managers/peers/clients, and moderates every submission before it goes public.
-Reworked from a single-tenant _QReview_ app onto Next.js 15 (App Router, React 19,
+Reworked from a single-tenant _QReview_ app onto Next.js 16 (App Router, React 19,
 TypeScript) with a custom design system. No external auth or ORM — crypto-based
 sessions and `better-sqlite3` only.
 
@@ -15,7 +15,7 @@ sessions and `better-sqlite3` only.
 
 ```bash
 npm run dev            # dev server on http://localhost:3000
-npm run seed           # seed demo owner + endorsements (demo@vouch.app / password123 → /u/maya-okonkwo)
+npm run seed           # seed demo owner + endorsements (demo@myvouch.fr / password123 → /u/maya-okonkwo)
 npm run build          # next build (runs in production mode — needs BASE_URL + SESSION_SECRET set)
 ```
 
@@ -50,7 +50,7 @@ validity alone is **not** sufficient — the epoch check is the revocation gate.
 **Data layer.** `lib/db.ts` is a hand-written `better-sqlite3` layer — all SQL
 lives there, exported as named functions (`getUserBySlug`, `createEndorsement`,
 `moderateEndorsement`, …). Schema is defined once in `lib/schema.sql` (shared by
-the app and `scripts/seed.mjs`). `migrate()` reconciles older `vouch.db` files by
+the app and `scripts/seed.mjs`). `migrate()` reconciles older `myvouch.db` files by
 ALTERing in missing columns from `EXPECTED_COLUMNS` — when you add a column, add
 it to both `schema.sql` and that map. **`connect()` order is load-bearing:**
 `dedupePending` → `migrate` → `db.exec(schema.sql)`. `migrate` must run _before_
@@ -127,7 +127,7 @@ mode) if these are missing — set dummy values when building locally/CI:
 
 ## Redesign work
 
-When asked to redesign/restyle/rebrand the UI, or anything mentioning "Vouch
+When asked to redesign/restyle/rebrand the UI, or anything mentioning "MyVouch
 design system", "the handoff", or "the new design", use the **`vouch-redesign`
 skill** — exact tokens (oklch colors, type, spacing, radii, shadows) are spec'd
 there. Don't invent values; reuse the tokens. Design tokens are also ported into

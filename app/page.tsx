@@ -16,7 +16,7 @@ export default async function HomePage() {
           <span className="kicker">Verified endorsements</span>
           <h1>References people actually trust.</h1>
           <p className="lede">
-            Vouch turns scattered word-of-mouth into a verified wall of
+            MyVouch turns scattered word-of-mouth into a verified wall of
             endorsements you own. Every reference is checked for a real work
             email, a shared employer, and a matched identity — so your
             reputation speaks for itself.
@@ -53,7 +53,7 @@ export default async function HomePage() {
             </span>
             <h3>Share one link</h3>
             <p>
-              Send your personal Vouch link to managers, peers, and clients. A
+              Send your personal MyVouch link to managers, peers, and clients. A
               guided form makes leaving a thoughtful endorsement take two
               minutes.
             </p>

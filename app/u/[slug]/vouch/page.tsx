@@ -13,7 +13,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const owner = getUserBySlug(slug);
-  return { title: owner ? `Vouch for ${owner.name}` : "Submit endorsement" };
+  return { title: owner ? `MyVouch for ${owner.name}` : "Submit endorsement" };
 }
 
 export default async function VouchPage({

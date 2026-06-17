@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 /**
- * SQLite data layer for Vouch (multi-user).
+ * SQLite data layer for MyVouch (multi-user).
  *
  * users        — profile owners. Each owns a public endorsement wall at /u/[slug]
  *                and moderates their own incoming queue.
@@ -11,7 +11,7 @@ import path from "node:path";
  *
  * The schema lives in lib/schema.sql (single source of truth, also used by the
  * seed script). migrate() reconciles older databases by adding any missing
- * columns so a long-lived vouch.db picks up new fields without a manual reset.
+ * columns so a long-lived myvouch.db picks up new fields without a manual reset.
  */
 
 export type Relationship =
@@ -103,7 +103,9 @@ export function toPublicEndorsement(e: Endorsement): PublicEndorsement {
   };
 }
 
-const globalForDb = globalThis as unknown as { __vouchDb?: Database.Database };
+const globalForDb = globalThis as unknown as {
+  __myvouchDb?: Database.Database;
+};
 
 const SCHEMA_PATH = path.join(process.cwd(), "lib", "schema.sql");
 
@@ -200,10 +202,10 @@ function dedupePending(db: Database.Database) {
 }
 
 function connect(): Database.Database {
-  // VOUCH_DB_PATH lets tests point at a throwaway database; defaults to the
-  // app's vouch.db in the project root.
+  // MYVOUCH_DB_PATH lets tests point at a throwaway database; defaults to the
+  // app's myvouch.db in the project root.
   const dbPath =
-    process.env.VOUCH_DB_PATH ?? path.join(process.cwd(), "vouch.db");
+    process.env.MYVOUCH_DB_PATH ?? path.join(process.cwd(), "myvouch.db");
   const db = new Database(dbPath);
   db.pragma("journal_mode = WAL");
   db.pragma("busy_timeout = 5000");
@@ -226,8 +228,8 @@ function connect(): Database.Database {
 }
 
 export function db(): Database.Database {
-  if (!globalForDb.__vouchDb) globalForDb.__vouchDb = connect();
-  return globalForDb.__vouchDb;
+  if (!globalForDb.__myvouchDb) globalForDb.__myvouchDb = connect();
+  return globalForDb.__myvouchDb;
 }
 
 /* ---------------- Users ---------------- */

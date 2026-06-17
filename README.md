@@ -1,20 +1,20 @@
-# Vouch
+# MyVouch
 
-**Verified endorsements.** Vouch turns scattered word-of-mouth into a verified
+**Verified endorsements.** MyVouch turns scattered word-of-mouth into a verified
 wall of references that each user owns. Anyone can sign up, share their personal
 link, collect endorsements from managers / peers / clients, and moderate every
 submission before it goes public.
 
 Reworked from the single-tenant _QReview_ app into a multi-user product on
-**Next.js (App Router)** with the **Vouch** design system.
+**Next.js (App Router)** with the **MyVouch** design system.
 
 ## Stack
 
-- **Next.js 15** (App Router, React 19, TypeScript)
-- **better-sqlite3** — local file database (`vouch.db`)
+- **Next.js 16** (App Router, React 19, TypeScript)
+- **better-sqlite3** — local file database (`myvouch.db`)
 - **Crypto-based auth** — scrypt password hashing + HMAC-signed session cookies
   (no external auth deps)
-- **Vouch design system** — tokens ported verbatim from the brand handoff into
+- **MyVouch design system** — tokens ported verbatim from the brand handoff into
   `app/globals.css` (Hanken Grotesk / Newsreader / JetBrains Mono, oklch colors)
 
 ## Getting started
@@ -48,7 +48,7 @@ pull requests, on Node 22. The build step is given dummy `BASE_URL` /
 app fails fast if they're unset.
 
 **Demo account** (after `npm run seed`):
-`demo@vouch.app` / `password123` → public wall at `/u/maya-okonkwo`.
+`demo@myvouch.fr` / `password123` → public wall at `/u/maya-okonkwo`.
 
 ## Routes
 
@@ -114,7 +114,7 @@ verified signal — nothing is labelled "verified" by default.
 - **Rate limiting**: public submit, login, and signup endpoints are throttled on
   both an identity key and the client IP (in-memory). For multi-instance deploys,
   back `lib/ratelimit.ts` with a shared store (e.g. Redis).
-- **Database**: `better-sqlite3` writes `vouch.db` in the working directory —
+- **Database**: `better-sqlite3` writes `myvouch.db` in the working directory —
   mount it on a persistent volume in production. The file (and its `-wal`/`-shm`
   sidecars) is git-ignored.
 - A global error boundary (`app/error.tsx`) handles unexpected runtime errors.

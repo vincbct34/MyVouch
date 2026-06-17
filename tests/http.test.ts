@@ -14,7 +14,7 @@ function req(headers: Record<string, string>): Request {
 
 test("isSameOrigin: accepts a matching Origin host", () => {
   assert.equal(
-    isSameOrigin(req({ host: "vouch.app", origin: "https://vouch.app" })),
+    isSameOrigin(req({ host: "myvouch.fr", origin: "https://myvouch.fr" })),
     true,
   );
 });
@@ -22,7 +22,7 @@ test("isSameOrigin: accepts a matching Origin host", () => {
 test("isSameOrigin: falls back to Referer when Origin is absent", () => {
   assert.equal(
     isSameOrigin(
-      req({ host: "vouch.app", referer: "https://vouch.app/u/x/vouch" }),
+      req({ host: "myvouch.fr", referer: "https://myvouch.fr/u/x/vouch" }),
     ),
     true,
   );
@@ -30,18 +30,21 @@ test("isSameOrigin: falls back to Referer when Origin is absent", () => {
 
 test("isSameOrigin: rejects a cross-origin request", () => {
   assert.equal(
-    isSameOrigin(req({ host: "vouch.app", origin: "https://evil.example" })),
+    isSameOrigin(req({ host: "myvouch.fr", origin: "https://evil.example" })),
     false,
   );
 });
 
 test("isSameOrigin: rejects when host or origin/referer is missing", () => {
-  assert.equal(isSameOrigin(req({ origin: "https://vouch.app" })), false);
-  assert.equal(isSameOrigin(req({ host: "vouch.app" })), false);
+  assert.equal(isSameOrigin(req({ origin: "https://myvouch.fr" })), false);
+  assert.equal(isSameOrigin(req({ host: "myvouch.fr" })), false);
 });
 
 test("isSameOrigin: rejects a malformed Origin", () => {
-  assert.equal(isSameOrigin(req({ host: "vouch.app", origin: "::::" })), false);
+  assert.equal(
+    isSameOrigin(req({ host: "myvouch.fr", origin: "::::" })),
+    false,
+  );
 });
 
 test("isLikelyBot: flags a filled honeypot", () => {

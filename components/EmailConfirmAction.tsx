@@ -54,7 +54,7 @@ export function EmailConfirmAction({ token }: { token: string }) {
     <div>
       <h1>Confirm your email</h1>
       <p className="sub">
-        Click below to confirm the email on your Vouch account.
+        Click below to confirm the email on your MyVouch account.
       </p>
       {state.kind === "error" && (
         <div className="form-error">{state.message}</div>

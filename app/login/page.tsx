@@ -67,7 +67,7 @@ export default function LoginPage() {
           </button>
         </form>
         <p className="auth-foot">
-          New to Vouch? <Link href="/signup">Create your wall</Link>
+          New to MyVouch? <Link href="/signup">Create your wall</Link>
         </p>
       </div>
     </main>

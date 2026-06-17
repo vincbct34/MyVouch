@@ -6,7 +6,7 @@ export function Footer() {
       <div className="wrap row">
         <Brandmark href={null} />
         <span className="cp">
-          © {new Date().getFullYear()} Vouch · Verified endorsements
+          © {new Date().getFullYear()} MyVouch · Verified endorsements
         </span>
       </div>
     </footer>

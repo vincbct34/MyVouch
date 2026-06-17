@@ -17,10 +17,10 @@ function resolveSecret(): string {
       "SESSION_SECRET is required in production (>= 16 chars, not a placeholder). Set it in the environment.",
     );
   }
-  return "vouch-dev-secret-change-me-in-production";
+  return "myvouch-dev-secret-change-me-in-production";
 }
 
-export const SESSION_COOKIE = "vouch_session";
+export const SESSION_COOKIE = "myvouch_session";
 const MAX_AGE = 60 * 60 * 24 * 30; // 30 days
 
 /* ---------- Password hashing (scrypt) ---------- */
@@ -45,7 +45,7 @@ export function verifyPassword(password: string, stored: string): boolean {
 // Precomputed valid salt:hash for a throwaway password. Used to spend the same
 // scrypt cost on the "no such user" login path so response timing doesn't leak
 // whether an email is registered (#5).
-const DUMMY_HASH = hashPassword("vouch-timing-equalizer");
+const DUMMY_HASH = hashPassword("myvouch-timing-equalizer");
 
 /** Run a scrypt verification against a dummy hash; always returns false. */
 export function dummyVerify(password: string): boolean {

@@ -1,4 +1,4 @@
-/** Inline SVG icon set — stroke 2.2–2.7, round caps/joins. Matches the Vouch handoff. */
+/** Inline SVG icon set — stroke 2.2–2.7, round caps/joins. Matches the MyVouch handoff. */
 
 type P = { className?: string };
 

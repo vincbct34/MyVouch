@@ -1,11 +1,11 @@
 import Link from "next/link";
 
-/** Vouch logo: speech bubble fused with a checkmark (endorsement + verification). */
+/** MyVouch logo: speech bubble fused with a checkmark (endorsement + verification). */
 export function Brandmark({
   size = "default",
   onDark = false,
   href = "/",
-  label = "Vouch",
+  label = "MyVouch",
 }: {
   size?: "default" | "lg";
   onDark?: boolean;

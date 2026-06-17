@@ -1,6 +1,6 @@
 /* ============================================================
-   VOUCH — Brand & Design System
-   Ported from the Vouch handoff (brand.css). Source of truth
+   MYVOUCH — Brand & Design System
+   Ported from the MyVouch handoff (brand.css). Source of truth
    for tokens, type, color, and components. Do not invent values.
    ============================================================ */
 
@@ -679,7 +679,7 @@ p {
 }
 
 /* ============================================================
-   SCREEN-SPECIFIC — derived from the Vouch handoff screens
+   SCREEN-SPECIFIC — derived from the MyVouch handoff screens
    ============================================================ */
 
 /* ---------- Reduced motion ---------- */

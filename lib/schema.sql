@@ -1,4 +1,4 @@
--- Canonical Vouch schema. Single source of truth, shared by lib/db.ts and
+-- Canonical MyVouch schema. Single source of truth, shared by lib/db.ts and
 -- scripts/seed.mjs. Columns added over time are reconciled onto existing
 -- databases by the migrate() routine in lib/db.ts (ALTER TABLE ADD COLUMN).
 

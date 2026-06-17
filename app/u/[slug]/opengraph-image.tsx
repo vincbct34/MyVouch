@@ -4,7 +4,7 @@ import { getUserBySlug, getApprovedStats } from "@/lib/db";
 // Dynamic social-share image for /u/[slug]. Next wires this as the OG/Twitter
 // image automatically. Runs on the Node runtime (better-sqlite3 isn't edge-safe).
 export const runtime = "nodejs";
-export const alt = "Verified endorsements on Vouch";
+export const alt = "Verified endorsements on MyVouch";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -22,7 +22,7 @@ export default async function Image({
   const { slug } = await params;
   const owner = getUserBySlug(slug);
   const stats = owner ? getApprovedStats(owner.id) : null;
-  const name = owner?.name ?? "Vouch";
+  const name = owner?.name ?? "MyVouch";
   const headline = owner?.headline ?? "Verified endorsements";
 
   return new ImageResponse(
@@ -48,7 +48,7 @@ export default async function Image({
             marginRight: 18,
           }}
         />
-        <div style={{ fontSize: 34, fontWeight: 700 }}>Vouch</div>
+        <div style={{ fontSize: 34, fontWeight: 700 }}>MyVouch</div>
       </div>
 
       <div style={{ display: "flex", flexDirection: "column" }}>

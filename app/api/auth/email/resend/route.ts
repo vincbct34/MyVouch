@@ -41,7 +41,7 @@ export async function POST(req: Request) {
   const link = `${appBaseUrl(req)}/confirm-email/${token}`;
   enqueueMail({
     to: user.email,
-    subject: "Confirm your email for Vouch",
+    subject: "Confirm your email for MyVouch",
     text: `Confirm your email to unlock verified endorsement signals:\n\n${link}\n`,
     html: `<p>Confirm your email to unlock verified endorsement signals:</p><p><a href="${link}">Confirm my email</a></p>`,
   });

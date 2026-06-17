@@ -5,11 +5,11 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL(appBaseUrl()),
   title: {
-    default: "Vouch — Verified endorsements",
-    template: "%s · Vouch",
+    default: "MyVouch — Verified endorsements",
+    template: "%s · MyVouch",
   },
   description:
-    "Collect, verify, and publish trusted references. Vouch turns word-of-mouth into a verified endorsement wall you own.",
+    "Collect, verify, and publish trusted references. MyVouch turns word-of-mouth into a verified endorsement wall you own.",
   icons: {
     icon: "/favicon.svg",
   },

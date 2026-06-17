@@ -1,4 +1,4 @@
-// Seed demo data: one owner (demo@vouch.app / password "password123") + endorsements.
+// Seed demo data: one owner (demo@myvouch.fr / password "password123") + endorsements.
 import Database from "better-sqlite3";
 import crypto from "node:crypto";
 import fs from "node:fs";
@@ -10,12 +10,12 @@ function hashPassword(password) {
   return `${salt}:${hash}`;
 }
 
-const db = new Database(path.join(process.cwd(), "vouch.db"));
+const db = new Database(path.join(process.cwd(), "myvouch.db"));
 db.pragma("journal_mode = WAL");
 // Single source of truth — same DDL the app uses (constraints + indexes).
 db.exec(fs.readFileSync(path.join(process.cwd(), "lib", "schema.sql"), "utf8"));
 
-const email = "demo@vouch.app";
+const email = "demo@myvouch.fr";
 let owner = db.prepare("SELECT * FROM users WHERE email = ?").get(email);
 if (!owner) {
   const info = db

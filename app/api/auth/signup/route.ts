@@ -113,9 +113,9 @@ export async function POST(req: Request) {
   const link = `${appBaseUrl(req)}/confirm-email/${emailToken}`;
   enqueueMail({
     to: email,
-    subject: "Confirm your email for Vouch",
-    text: `Welcome to Vouch. Confirm your email to unlock verified endorsement signals:\n\n${link}\n`,
-    html: `<p>Welcome to Vouch.</p><p>Confirm your email to unlock verified endorsement signals:</p><p><a href="${link}">Confirm my email</a></p>`,
+    subject: "Confirm your email for MyVouch",
+    text: `Welcome to MyVouch. Confirm your email to unlock verified endorsement signals:\n\n${link}\n`,
+    html: `<p>Welcome to MyVouch.</p><p>Confirm your email to unlock verified endorsement signals:</p><p><a href="${link}">Confirm my email</a></p>`,
   });
 
   const res = NextResponse.json({ ok: true, slug });

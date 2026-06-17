@@ -5,8 +5,8 @@ import os from "node:os";
 import path from "node:path";
 
 // Throwaway DB before importing the data layer (see moderation.test.ts).
-const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "vouch-db-test-"));
-process.env.VOUCH_DB_PATH = path.join(tmpDir, "test.db");
+const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "myvouch-db-test-"));
+process.env.MYVOUCH_DB_PATH = path.join(tmpDir, "test.db");
 
 const dbmod = await import("../lib/db.ts");
 const {

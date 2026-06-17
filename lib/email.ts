@@ -15,7 +15,7 @@ export interface Mail {
 }
 
 function from(): string {
-  return process.env.EMAIL_FROM || "Vouch <no-reply@vouch.app>";
+  return process.env.EMAIL_FROM || "MyVouch <no-reply@myvouch.fr>";
 }
 
 async function sendViaResend(mail: Mail, apiKey: string): Promise<void> {
