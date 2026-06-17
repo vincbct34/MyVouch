@@ -1,0 +1,15 @@
+# Dependencies & build output
+node_modules/
+.next/
+out/
+build/
+
+# Local database files
+*.db
+*.db-shm
+*.db-wal
+
+# Lockfiles & generated
+package-lock.json
+next-env.d.ts
+tsconfig.tsbuildinfo

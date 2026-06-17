@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Daniel Mercer — Vouch</title>
+    <link rel="stylesheet" href="../assets/brand.css" />
+    <style>
+      .profile-hero {
+        background:
+          radial-gradient(
+            110% 120% at 90% -20%,
+            var(--brand-tint) 0%,
+            transparent 50%
+          ),
+          var(--paper);
+        border-bottom: 1px solid var(--line);
+      }
+      .ph-inner {
+        padding: 56px 0 44px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 40px;
+        align-items: start;
+      }
+      .id-row {
+        display: flex;
+        gap: 24px;
+        align-items: center;
+      }
+      .id-row .name {
+        font-size: clamp(2rem, 4.4vw, 3rem);
+        font-weight: 800;
+        letter-spacing: -0.035em;
+        line-height: 1;
+      }
+      .id-row .role {
+        font-size: 18px;
+        color: var(--ink-2);
+        margin-top: 8px;
+      }
+      .id-row .loc {
+        font-size: 14px;
+        color: var(--ink-soft);
+        margin-top: 10px;
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+      .id-row .loc span {
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .verified-id {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        margin-top: 14px;
+      }
+
+      .stat-strip {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .stat-box {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-md);
+        padding: 16px 20px;
+        min-width: 116px;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        padding: 26px 0;
+      }
+      .filters {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .filters button {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--ink-soft);
+        padding: 9px 16px;
+        border-radius: var(--r-pill);
+        border: 1px solid var(--line);
+        background: var(--paper);
+        transition: all 0.15s ease;
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .filters button .c {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--ink-faint);
+      }
+      .filters button:hover {
+        border-color: var(--ink-faint);
+      }
+      .filters button.active {
+        background: var(--ink);
+        color: var(--paper);
+        border-color: var(--ink);
+      }
+      .filters button.active .c {
+        color: oklch(0.75 0.02 256);
+      }
+
+      .masonry {
+        columns: 3;
+        column-gap: 22px;
+        padding-bottom: 60px;
+      }
+      .masonry .review {
+        break-inside: avoid;
+        margin-bottom: 22px;
+        display: inline-flex;
+        width: 100%;
+      }
+      .review .date {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--ink-faint);
+        margin-left: auto;
+      }
+
+      .cta-band {
+        background: var(--ink);
+        color: var(--paper);
+        border-radius: var(--r-xl);
+        padding: 44px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 28px;
+        align-items: center;
+        margin-bottom: 70px;
+      }
+      .cta-band h2 {
+        font-size: clamp(1.6rem, 3vw, 2.2rem);
+      }
+      .cta-band p {
+        color: oklch(0.78 0.015 256);
+        margin-top: 10px;
+        font-size: 16px;
+        max-width: 46ch;
+      }
+
+      @media (max-width: 1000px) {
+        .masonry {
+          columns: 2;
+        }
+      }
+      @media (max-width: 860px) {
+        .ph-inner {
+          grid-template-columns: 1fr;
+          gap: 26px;
+        }
+        .cta-band {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (max-width: 640px) {
+        .masonry {
+          columns: 1;
+        }
+        .id-row {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ===== Top nav ===== -->
+    <header class="topnav">
+      <div class="wrap bar">
+        <a class="brandmark" href="../Design System.html">
+          <svg
+            class="mark"
+            viewBox="0 0 32 32"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path
+              d="M6 4h20a4 4 0 0 1 4 4v11a4 4 0 0 1-4 4H15l-6.4 5.2a.8.8 0 0 1-1.3-.62V23H6a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4z"
+              fill="currentColor"
+            />
+            <path
+              d="M10.2 14.3l3.7 3.8 7.9-8.4"
+              stroke="var(--on-brand)"
+              stroke-width="2.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          Vouch
+        </a>
+        <nav>
+          <a href="../Design System.html">Design System</a>
+          <a href="Public Profile.html" class="active">Public Profile</a>
+          <a href="Admin Dashboard.html">Admin</a>
+          <a href="Submit Review.html">Submit</a>
+        </nav>
+        <a class="btn btn-ghost btn-sm" href="Submit Review.html"
+          >Leave a review</a
+        >
+      </div>
+    </header>
+
+    <!-- ===== Profile hero ===== -->
+    <section class="profile-hero">
+      <div class="wrap ph-inner">
+        <div>
+          <div class="id-row">
+            <span class="avatar xl a1">DM</span>
+            <div>
+              <div class="name">Daniel Mercer</div>
+              <div class="role">Product &amp; Brand Designer · Independent</div>
+              <div class="loc">
+                <span>📍 Lisbon, remote-friendly</span>
+                <span>· 9 yrs experience</span>
+              </div>
+              <div class="verified-id">
+                <span class="badge badge-verified"
+                  ><span class="dot"></span>Identity verified</span
+                >
+                <span class="badge badge-brand"
+                  ><span class="dot"></span>Open to work</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col" style="gap: 16px; align-items: flex-end">
+          <div class="stat-strip">
+            <div class="stat-box">
+              <div class="stat">
+                <div class="n">24</div>
+                <div class="l">Verified reviews</div>
+              </div>
+            </div>
+            <div class="stat-box">
+              <div class="stat">
+                <div class="n">4.9<span class="u">/5</span></div>
+                <div class="l">Average rating</div>
+              </div>
+            </div>
+            <div class="stat-box">
+              <div class="stat">
+                <div class="n">18</div>
+                <div class="l">Would rehire</div>
+              </div>
+            </div>
+          </div>
+          <a class="btn btn-primary" href="Submit Review.html"
+            >＋ Request a reference</a
+          >
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Toolbar ===== -->
+    <div class="wrap">
+      <div class="toolbar">
+        <div class="filters">
+          <button class="active">All <span class="c">24</span></button>
+          <button>Former managers <span class="c">9</span></button>
+          <button>Peers <span class="c">10</span></button>
+          <button>Clients <span class="c">5</span></button>
+        </div>
+        <div class="center muted" style="font-size: 14px">
+          <span>Sorted by</span>
+          <strong style="color: var(--ink)">Most recent</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Reviews masonry ===== -->
+    <div class="wrap">
+      <div class="masonry">
+        <article class="review">
+          <div class="qmark">&ldquo;</div>
+          <p class="body">
+            One of the rare designers who makes the whole team <em>better</em>.
+            Calm under pressure and relentless about the details that actually
+            move the needle. I'd bring him onto any team I lead.
+          </p>
+          <div class="meta-row">
+            <span class="badge badge-verified"
+              ><span class="dot"></span>Verified</span
+            ><span class="chip">Former manager</span
+            ><span class="date">MAR 2026</span>
+          </div>
+          <div class="foot">
+            <span class="avatar a2">PR</span>
+            <span class="who"
+              ><span class="nm">Priya Raman</span
+              ><span class="rl">VP Product · Northwind</span></span
+            >
+          </div>
+        </article>
+
+        <article class="review">
+          <div class="qmark">&ldquo;</div>
+          <p class="body">
+            Took a vague brief and gave us a brand the whole company rallied
+            behind. Genuinely <em>thoughtful</em>, fast, and easy to work with
+            under a tight deadline.
+          </p>
+          <div class="meta-row">
+            <span class="badge badge-verified"
+              ><span class="dot"></span>Verified</span
+            ><span class="chip chip-solid">Client</span
+            ><span class="date">FEB 2026</span>
+          </div>
+          <div class="foot">
+            <span class="avatar a3">MA</span>
+            <span class="who"
+              ><span class="nm">Mara Adeyemi</span
+              ><span class="rl">Founder · Lumen Studio</span></span
+            >
+          </div>
+        </article>
+
+        <article class="review">
+          <div class="qmark">&ldquo;</div>
+          <p class="body">
+            Shipped our redesign three weeks early and somehow made the
+            engineers <em>happy</em> about it. He listens harder than anyone
+            I've worked with.
+          </p>
+          <div class="meta-row">
+            <span class="badge badge-verified"
+              ><span class="dot"></span>Verified</span
+            ><span class="chip">Peer</span><span class="date">FEB 2026</span>
+          </div>
+          <div class="foot">
+            <span class="avatar a1">JK</span>
+            <span class="who"
+              ><span class="nm">Jonas Keller</span
+              ><span class="rl">Staff Engineer · Northwind</span></span
+            >
+          </div>
+        </article>
+
+        <article class="review">
+          <div class="qmark">&ldquo;</div>
+          <p class="body">
+            Daniel has a quiet way of raising the bar for everyone around him.
+            Our design reviews became the meeting people actually looked forward
+            to.
+          </p>
+          <div class="meta-row">
+            <span class="badge badge-verified"
+              ><span class="dot"></span>Verified</span
+            ><span class="chip">Former manager</span
+            ><span class="date">JAN 2026</span>
+          </div>
+          <div class="foot">
+            <span class="avatar a4">EO</span>
+            <span class="who"
+              ><span class="nm">Elif Önder</span
+              ><span class="rl">Design Director · Cartograph</span></span
+            >
+          </div>
+        </article>
+
+        <article class="review">
+          <div class="qmark">&ldquo;</div>
+          <p class="body">
+            We hired him for a logo and got a whole design language. Three years
+            later we still use the system he built — that's the highest praise I
+            can give.
+          </p>
+          <div class="meta-row">
+            <span class="badge badge-verified"
+              ><span class="dot"></span>Verified</span
+            ><span class="chip chip-solid">Client</span
+            ><span class="date">JAN 2026</span>
+          </div>
+          <div class="foot">
+            <span class="avatar a5">TC</span>
+            <span class="who"
+              ><span class="nm">Theo Castellanos</span
+              ><span class="rl">CEO · Milepost</span></span
+            >
+          </div>
+        </article>
+
+        <article class="review">
+          <div class="qmark">&ldquo;</div>
+          <p class="body">
+            Reliable in the way that matters most: he tells you the truth early.
+            Saved us from shipping the wrong thing more than once, always with a
+            better idea in hand.
+          </p>
+          <div class="meta-row">
+            <span class="badge badge-verified"
+              ><span class="dot"></span>Verified</span
+            ><span class="chip">Peer</span><span class="date">DEC 2025</span>
+          </div>
+          <div class="foot">
+            <span class="avatar a6">SN</span>
+            <span class="who"
+              ><span class="nm">Sofia Nilsson</span
+              ><span class="rl">Product Lead · Northwind</span></span
+            >
+          </div>
+        </article>
+
+        <article class="review">
+          <div class="qmark">&ldquo;</div>
+          <p class="body">
+            A real partner, not just a vendor. He learned our business well
+            enough to argue with us — and he was usually right.
+          </p>
+          <div class="meta-row">
+            <span class="badge badge-verified"
+              ><span class="dot"></span>Verified</span
+            ><span class="chip chip-solid">Client</span
+            ><span class="date">NOV 2025</span>
+          </div>
+          <div class="foot">
+            <span class="avatar a2">RB</span>
+            <span class="who"
+              ><span class="nm">Rosa Bianchi</span
+              ><span class="rl">Head of Growth · Fathom</span></span
+            >
+          </div>
+        </article>
+
+        <article class="review">
+          <div class="qmark">&ldquo;</div>
+          <p class="body">
+            I've mentored a lot of designers; few have grown as fast as Daniel.
+            He turns feedback into <em>better work</em> overnight and lifts the
+            people next to him.
+          </p>
+          <div class="meta-row">
+            <span class="badge badge-verified"
+              ><span class="dot"></span>Verified</span
+            ><span class="chip">Former manager</span
+            ><span class="date">OCT 2025</span>
+          </div>
+          <div class="foot">
+            <span class="avatar a1">HW</span>
+            <span class="who"
+              ><span class="nm">Henry Walsh</span
+              ><span class="rl">Principal Designer · Cartograph</span></span
+            >
+          </div>
+        </article>
+
+        <article class="review">
+          <div class="qmark">&ldquo;</div>
+          <p class="body">
+            Pixel-precise without ever losing the plot on the bigger picture.
+            The kind of collaborator who makes a hard project feel calm.
+          </p>
+          <div class="meta-row">
+            <span class="badge badge-verified"
+              ><span class="dot"></span>Verified</span
+            ><span class="chip">Peer</span><span class="date">SEP 2025</span>
+          </div>
+          <div class="foot">
+            <span class="avatar a3">KP</span>
+            <span class="who"
+              ><span class="nm">Kai Pereira</span
+              ><span class="rl">Frontend Lead · Fathom</span></span
+            >
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <!-- ===== CTA band ===== -->
+    <div class="wrap">
+      <div class="cta-band">
+        <div>
+          <span class="kicker" style="color: oklch(0.72 0.05 256)"
+            >Worked with Daniel?</span
+          >
+          <h2>Add your endorsement</h2>
+          <p>
+            It takes two minutes. Your review is verified against your working
+            relationship and only goes live once Daniel approves it.
+          </p>
+        </div>
+        <a class="btn btn-primary btn-lg" href="Submit Review.html"
+          >Leave a review →</a
+        >
+      </div>
+    </div>
+  </body>
+</html>

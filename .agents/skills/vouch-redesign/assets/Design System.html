@@ -1,0 +1,1084 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vouch — Design System</title>
+    <link rel="stylesheet" href="assets/brand.css" />
+    <style>
+      .hero {
+        background:
+          radial-gradient(
+            120% 90% at 85% -10%,
+            var(--brand-tint) 0%,
+            transparent 55%
+          ),
+          radial-gradient(
+            90% 80% at 0% 110%,
+            var(--verified-tint) 0%,
+            transparent 50%
+          ),
+          var(--paper);
+        border-bottom: 1px solid var(--line);
+        overflow: hidden;
+      }
+      .hero-inner {
+        padding: 76px 0 84px;
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 56px;
+        align-items: center;
+      }
+      .hero h1 {
+        font-size: clamp(2.8rem, 5.6vw, 4.6rem);
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        line-height: 0.98;
+      }
+      .hero .lede {
+        font-size: 20px;
+        color: var(--ink-2);
+        max-width: 30ch;
+        margin-top: 22px;
+        line-height: 1.5;
+      }
+      .hero .cta {
+        display: flex;
+        gap: 12px;
+        margin-top: 32px;
+        flex-wrap: wrap;
+      }
+      .hero-card {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-xl);
+        box-shadow: var(--shadow-lg);
+        padding: 30px;
+        position: relative;
+        transform: rotate(1.4deg);
+      }
+      .hero-card .qmark {
+        font-family: var(--serif);
+        font-size: 64px;
+        line-height: 0.4;
+        color: var(--brand-tint2);
+        height: 26px;
+      }
+      .hero-card .q {
+        font-family: var(--serif);
+        font-size: 22px;
+        line-height: 1.45;
+        color: var(--ink);
+        letter-spacing: -0.01em;
+        margin: 14px 0 22px;
+      }
+      .hero-card .q em {
+        color: var(--brand-deep);
+        font-style: italic;
+      }
+
+      section.block {
+        padding: 76px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .sec-head {
+        max-width: 60ch;
+        margin-bottom: 40px;
+      }
+      .sec-head h2 {
+        font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+        margin-top: 10px;
+      }
+      .sec-head p {
+        color: var(--ink-soft);
+        font-size: 17px;
+        margin-top: 12px;
+      }
+
+      /* swatches */
+      .sw-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 14px;
+      }
+      .sw {
+        border-radius: var(--r-md);
+        border: 1px solid var(--line);
+        overflow: hidden;
+        background: var(--paper);
+      }
+      .sw .chip-c {
+        height: 92px;
+      }
+      .sw .info {
+        padding: 11px 13px;
+      }
+      .sw .info .nm {
+        font-weight: 700;
+        font-size: 13.5px;
+      }
+      .sw .info .vl {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--ink-soft);
+        margin-top: 2px;
+      }
+
+      /* type specimens */
+      .type-row {
+        display: grid;
+        grid-template-columns: 110px 1fr;
+        gap: 28px;
+        padding: 22px 0;
+        border-top: 1px solid var(--line);
+        align-items: baseline;
+      }
+      .type-row:first-child {
+        border-top: 0;
+      }
+      .type-row .lbl {
+        font-family: var(--mono);
+        font-size: 11.5px;
+        color: var(--ink-faint);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        padding-top: 8px;
+      }
+
+      .demo-grid {
+        display: grid;
+        gap: 22px;
+      }
+      .panel {
+        background: var(--paper-2);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        padding: 26px;
+      }
+      .panel-h {
+        font-family: var(--mono);
+        font-size: 11.5px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-faint);
+        margin-bottom: 18px;
+      }
+      .row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+
+      .screens {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+      }
+      .screen-card {
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        overflow: hidden;
+        background: var(--paper);
+        box-shadow: var(--shadow-sm);
+        transition:
+          transform 0.18s ease,
+          box-shadow 0.18s ease;
+        display: flex;
+        flex-direction: column;
+      }
+      .screen-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+      }
+      .screen-card .thumb {
+        aspect-ratio: 16/10;
+        border-bottom: 1px solid var(--line);
+        position: relative;
+        overflow: hidden;
+      }
+      .screen-card .meta {
+        padding: 18px 20px 20px;
+      }
+      .screen-card .meta h3 {
+        font-size: 18px;
+      }
+      .screen-card .meta p {
+        font-size: 14px;
+        color: var(--ink-soft);
+        margin-top: 6px;
+      }
+      .screen-card .meta .go {
+        margin-top: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--brand-deep);
+      }
+
+      /* mini-mock thumbs */
+      .mk {
+        position: absolute;
+        inset: 0;
+        padding: 16px;
+        font-size: 9px;
+      }
+      .mk-bar {
+        height: 8px;
+        border-radius: 3px;
+        background: var(--line);
+      }
+      footer.foot {
+        padding: 50px 0;
+      }
+      @media (max-width: 900px) {
+        .hero-inner {
+          grid-template-columns: 1fr;
+          gap: 40px;
+        }
+        .screens {
+          grid-template-columns: 1fr;
+        }
+        .type-row {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ===== Top nav ===== -->
+    <header class="topnav">
+      <div class="wrap bar">
+        <a class="brandmark" href="Design System.html">
+          <svg
+            class="mark"
+            viewBox="0 0 32 32"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path
+              d="M6 4h20a4 4 0 0 1 4 4v11a4 4 0 0 1-4 4H15l-6.4 5.2a.8.8 0 0 1-1.3-.62V23H6a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4z"
+              fill="currentColor"
+            />
+            <path
+              d="M10.2 14.3l3.7 3.8 7.9-8.4"
+              stroke="var(--on-brand)"
+              stroke-width="2.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          Vouch
+        </a>
+        <nav>
+          <a href="Design System.html" class="active">Design System</a>
+          <a href="screens/Public Profile.html">Public Profile</a>
+          <a href="screens/Admin Dashboard.html">Admin</a>
+          <a href="screens/Submit Review.html">Submit</a>
+        </nav>
+        <a class="btn btn-primary btn-sm" href="screens/Admin Dashboard.html"
+          >Open app</a
+        >
+      </div>
+    </header>
+
+    <!-- ===== Hero ===== -->
+    <section class="hero">
+      <div class="wrap hero-inner">
+        <div>
+          <span class="kicker">Brand &amp; Design System — v1.0</span>
+          <h1>Endorsements,<br />worth&nbsp;trusting.</h1>
+          <p class="lede">
+            Vouch collects honest feedback from the managers and colleagues who
+            actually worked with you — then lets you verify and publish only
+            what's true.
+          </p>
+          <div class="cta">
+            <a class="btn btn-primary btn-lg" href="screens/Public Profile.html"
+              >View a public profile</a
+            >
+            <a class="btn btn-ghost btn-lg" href="#system"
+              >Explore the system</a
+            >
+          </div>
+        </div>
+        <div class="hero-card">
+          <div class="qmark">&ldquo;</div>
+          <p class="q">
+            One of the rare designers who makes the whole team <em>better</em>.
+            Calm under pressure, relentless about the details that matter.
+          </p>
+          <div
+            class="review foot"
+            style="padding: 0; border: 0; box-shadow: none; background: none"
+          >
+            <span class="avatar a2">PR</span>
+            <span class="who">
+              <span class="nm">Priya Raman</span>
+              <span class="rl"
+                >VP Product · Northwind — <strong>former manager</strong></span
+              >
+            </span>
+          </div>
+          <div
+            style="
+              margin-top: 16px;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            "
+          >
+            <span class="badge badge-verified"
+              ><span class="dot"></span>Verified</span
+            >
+            <span class="stars lg" aria-label="5 out of 5">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.6 5.9 21l1.4-6.8L2.2 9.6l6.9-.7z"
+                />
+              </svg>
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.6 5.9 21l1.4-6.8L2.2 9.6l6.9-.7z"
+                />
+              </svg>
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.6 5.9 21l1.4-6.8L2.2 9.6l6.9-.7z"
+                />
+              </svg>
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.6 5.9 21l1.4-6.8L2.2 9.6l6.9-.7z"
+                />
+              </svg>
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.6 5.9 21l1.4-6.8L2.2 9.6l6.9-.7z"
+                />
+              </svg>
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <a id="system"></a>
+
+    <!-- ===== Brand story / principles ===== -->
+    <section class="block">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="kicker">01 — The idea</span>
+          <h2>A reference you can stand behind</h2>
+          <p>
+            Vouch sits between a testimonial wall and a background check. Every
+            endorsement is tied to a real working relationship, passes through
+            your review, and carries a verified mark when it's published. The
+            brand has to feel two things at once:
+            <strong>warm enough to invite honesty</strong>, and
+            <strong>credible enough to be believed</strong>.
+          </p>
+        </div>
+        <div class="demo-grid" style="grid-template-columns: repeat(3, 1fr)">
+          <div class="panel">
+            <div class="panel-h">Principle 01</div>
+            <h3 style="font-size: 20px">Credible, not corporate</h3>
+            <p class="muted" style="margin-top: 8px; font-size: 15px">
+              Editorial serif for the human voice of a quote; a precise grotesk
+              for the system around it. Trust is shown, not shouted.
+            </p>
+          </div>
+          <div class="panel">
+            <div class="panel-h">Principle 02</div>
+            <h3 style="font-size: 20px">Verification is the hero</h3>
+            <p class="muted" style="margin-top: 8px; font-size: 15px">
+              The check-in-a-bubble runs through the whole product. Green always
+              means a real person, really verified.
+            </p>
+          </div>
+          <div class="panel">
+            <div class="panel-h">Principle 03</div>
+            <h3 style="font-size: 20px">You stay in control</h3>
+            <p class="muted" style="margin-top: 8px; font-size: 15px">
+              Nothing goes public without your approval. The admin surfaces make
+              moderation calm, clear and quick.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Logo ===== -->
+    <section class="block">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="kicker">02 — Logo</span>
+          <h2>The mark</h2>
+          <p>
+            A speech bubble and a checkmark, fused. The quote is the
+            endorsement; the check is the verification. One shape carries the
+            entire promise of the product.
+          </p>
+        </div>
+        <div class="demo-grid" style="grid-template-columns: 1.2fr 1fr">
+          <div
+            class="panel"
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              min-height: 230px;
+              background: var(--paper);
+            "
+          >
+            <span class="brandmark lg">
+              <svg
+                class="mark"
+                viewBox="0 0 32 32"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+              >
+                <path
+                  d="M6 4h20a4 4 0 0 1 4 4v11a4 4 0 0 1-4 4H15l-6.4 5.2a.8.8 0 0 1-1.3-.62V23H6a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M10.2 14.3l3.7 3.8 7.9-8.4"
+                  stroke="var(--on-brand)"
+                  stroke-width="2.7"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              Vouch
+            </span>
+          </div>
+          <div
+            class="panel"
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              min-height: 230px;
+              background: var(--ink);
+            "
+          >
+            <span class="brandmark lg on-dark">
+              <svg
+                class="mark"
+                viewBox="0 0 32 32"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+                style="color: var(--on-brand)"
+              >
+                <path
+                  d="M6 4h20a4 4 0 0 1 4 4v11a4 4 0 0 1-4 4H15l-6.4 5.2a.8.8 0 0 1-1.3-.62V23H6a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M10.2 14.3l3.7 3.8 7.9-8.4"
+                  stroke="var(--ink)"
+                  stroke-width="2.7"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              Vouch
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Color ===== -->
+    <section class="block">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="kicker">03 — Color</span>
+          <h2>Palette</h2>
+          <p>
+            A cool ink and a soft paper hold the page. Trust-blue leads;
+            verified-green, pending-amber and declined-rose carry the moderation
+            states — never decorative, always meaningful.
+          </p>
+        </div>
+        <h3 style="font-size: 15px; margin-bottom: 14px" class="muted">
+          Brand &amp; neutrals
+        </h3>
+        <div class="sw-grid" style="margin-bottom: 28px">
+          <div class="sw">
+            <div class="chip-c" style="background: var(--brand)"></div>
+            <div class="info">
+              <div class="nm">Trust Blue</div>
+              <div class="vl">--brand</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="chip-c" style="background: var(--brand-deep)"></div>
+            <div class="info">
+              <div class="nm">Brand Deep</div>
+              <div class="vl">--brand-deep</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="chip-c" style="background: var(--brand-tint)"></div>
+            <div class="info">
+              <div class="nm">Brand Tint</div>
+              <div class="vl">--brand-tint</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="chip-c" style="background: var(--ink)"></div>
+            <div class="info">
+              <div class="nm">Ink</div>
+              <div class="vl">--ink</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="chip-c" style="background: var(--ink-soft)"></div>
+            <div class="info">
+              <div class="nm">Ink Soft</div>
+              <div class="vl">--ink-soft</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div
+              class="chip-c"
+              style="
+                background: var(--paper);
+                box-shadow: inset 0 0 0 1px var(--line);
+              "
+            ></div>
+            <div class="info">
+              <div class="nm">Paper</div>
+              <div class="vl">--paper</div>
+            </div>
+          </div>
+        </div>
+        <h3 style="font-size: 15px; margin-bottom: 14px" class="muted">
+          State colors
+        </h3>
+        <div class="sw-grid">
+          <div class="sw">
+            <div class="chip-c" style="background: var(--verified)"></div>
+            <div class="info">
+              <div class="nm">Verified</div>
+              <div class="vl">--verified</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="chip-c" style="background: var(--amber)"></div>
+            <div class="info">
+              <div class="nm">Pending</div>
+              <div class="vl">--amber</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="chip-c" style="background: var(--rose)"></div>
+            <div class="info">
+              <div class="nm">Declined</div>
+              <div class="vl">--rose</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="chip-c" style="background: var(--verified-tint)"></div>
+            <div class="info">
+              <div class="nm">Verified Tint</div>
+              <div class="vl">--verified-tint</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="chip-c" style="background: var(--amber-tint)"></div>
+            <div class="info">
+              <div class="nm">Pending Tint</div>
+              <div class="vl">--amber-tint</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="chip-c" style="background: var(--rose-tint)"></div>
+            <div class="info">
+              <div class="nm">Declined Tint</div>
+              <div class="vl">--rose-tint</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Type ===== -->
+    <section class="block">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="kicker">04 — Typography</span>
+          <h2>Type system</h2>
+          <p>
+            Three voices. Newsreader speaks for the people leaving reviews;
+            Hanken Grotesk runs the interface; JetBrains Mono labels and
+            timestamps the machinery.
+          </p>
+        </div>
+        <div class="type-row">
+          <div class="lbl">Display<br />Hanken 800</div>
+          <div>
+            <div class="display" style="line-height: 0.95">Vouched for.</div>
+          </div>
+        </div>
+        <div class="type-row">
+          <div class="lbl">Heading<br />Hanken 700</div>
+          <div>
+            <h2 style="font-size: 2rem">People who'd hire you again</h2>
+          </div>
+        </div>
+        <div class="type-row">
+          <div class="lbl">Quote<br />Newsreader Italic</div>
+          <div>
+            <p class="quote" style="font-size: 26px; color: var(--ink)">
+              &ldquo;She turned a stalled project into our best launch of the
+              year.&rdquo;
+            </p>
+          </div>
+        </div>
+        <div class="type-row">
+          <div class="lbl">Body<br />Hanken 400</div>
+          <div>
+            <p style="font-size: 17px; max-width: 60ch; color: var(--ink-2)">
+              Body copy stays readable and unfussy. Vouch favours short,
+              declarative sentences — the tone of a confident reference, not a
+              marketing page.
+            </p>
+          </div>
+        </div>
+        <div class="type-row">
+          <div class="lbl">Label<br />JetBrains Mono</div>
+          <div>
+            <span class="kicker" style="font-size: 14px"
+              >FORMER MANAGER · VERIFIED · MAR 2026</span
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Components ===== -->
+    <section class="block">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="kicker">05 — Components</span>
+          <h2>Building blocks</h2>
+          <p>The reusable parts that assemble every screen in Vouch.</p>
+        </div>
+        <div class="demo-grid" style="grid-template-columns: 1fr 1fr">
+          <div class="panel">
+            <div class="panel-h">Buttons</div>
+            <div class="row" style="margin-bottom: 14px">
+              <button class="btn btn-primary">Publish</button>
+              <button class="btn btn-ghost">Preview</button>
+              <button class="btn btn-dark">Open app</button>
+            </div>
+            <div class="row">
+              <button class="btn btn-verified btn-sm">
+                Approve &amp; verify
+              </button>
+              <button class="btn btn-rose btn-sm">Decline</button>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-h">Status badges</div>
+            <div class="row" style="margin-bottom: 14px">
+              <span class="badge badge-verified"
+                ><span class="dot"></span>Verified</span
+              >
+              <span class="badge badge-pending"
+                ><span class="dot"></span>Pending</span
+              >
+              <span class="badge badge-declined"
+                ><span class="dot"></span>Declined</span
+              >
+            </div>
+            <div class="row">
+              <span class="chip">Former manager</span>
+              <span class="chip">Peer</span>
+              <span class="chip chip-solid">Client</span>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-h">Avatars &amp; rating</div>
+            <div class="row" style="margin-bottom: 16px">
+              <span class="avatar a1">DM</span>
+              <span class="avatar a2">PR</span>
+              <span class="avatar a3 sq">JK</span>
+              <span class="avatar a4">Lm</span>
+            </div>
+            <span class="stars lg" aria-label="4.8 of 5">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.6 5.9 21l1.4-6.8L2.2 9.6l6.9-.7z"
+                />
+              </svg>
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.6 5.9 21l1.4-6.8L2.2 9.6l6.9-.7z"
+                />
+              </svg>
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.6 5.9 21l1.4-6.8L2.2 9.6l6.9-.7z"
+                />
+              </svg>
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.6 5.9 21l1.4-6.8L2.2 9.6l6.9-.7z"
+                />
+              </svg>
+              <svg class="off" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.6 5.9 21l1.4-6.8L2.2 9.6l6.9-.7z"
+                />
+              </svg>
+            </span>
+          </div>
+          <div class="panel">
+            <div class="panel-h">Input field</div>
+            <div class="field">
+              <label>Your relationship</label>
+              <input
+                class="input"
+                type="text"
+                placeholder="e.g. Reported to them at Northwind"
+                value="Worked together on the Atlas team"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-h" style="margin: 34px 0 16px">Review card</div>
+        <div
+          style="
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+          "
+        >
+          <article class="review">
+            <div class="qmark">&ldquo;</div>
+            <p class="body">
+              One of the rare designers who makes the whole team
+              <em>better</em>. Calm under pressure, relentless about the
+              details.
+            </p>
+            <div class="meta-row">
+              <span class="badge badge-verified"
+                ><span class="dot"></span>Verified</span
+              ><span class="chip">Former manager</span>
+            </div>
+            <div class="foot">
+              <span class="avatar a2">PR</span>
+              <span class="who"
+                ><span class="nm">Priya Raman</span
+                ><span class="rl">VP Product · Northwind</span></span
+              >
+            </div>
+          </article>
+          <article class="review">
+            <div class="qmark">&ldquo;</div>
+            <p class="body">
+              Shipped our redesign three weeks early and somehow made the
+              engineers <em>happy</em> about it. I'd work with him again
+              tomorrow.
+            </p>
+            <div class="meta-row">
+              <span class="badge badge-verified"
+                ><span class="dot"></span>Verified</span
+              ><span class="chip">Peer</span>
+            </div>
+            <div class="foot">
+              <span class="avatar a1">JK</span>
+              <span class="who"
+                ><span class="nm">Jonas Keller</span
+                ><span class="rl">Staff Engineer · Northwind</span></span
+              >
+            </div>
+          </article>
+          <article class="review">
+            <div class="qmark">&ldquo;</div>
+            <p class="body">
+              Took a vague brief and gave us a brand the whole company rallied
+              behind. A genuinely <em>thoughtful</em> partner.
+            </p>
+            <div class="meta-row">
+              <span class="badge badge-verified"
+                ><span class="dot"></span>Verified</span
+              ><span class="chip chip-solid">Client</span>
+            </div>
+            <div class="foot">
+              <span class="avatar a3">MA</span>
+              <span class="who"
+                ><span class="nm">Mara Adeyemi</span
+                ><span class="rl">Founder · Lumen Studio</span></span
+              >
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Screens ===== -->
+    <section class="block" style="border-bottom: 0">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="kicker">06 — The product</span>
+          <h2>Three screens, one system</h2>
+          <p>
+            Where every token and component above comes together. Open each to
+            explore the live, responsive mockup.
+          </p>
+        </div>
+        <div class="screens">
+          <a class="screen-card" href="screens/Public Profile.html">
+            <div class="thumb" style="background: var(--paper-2)">
+              <div class="mk">
+                <div
+                  style="
+                    display: flex;
+                    gap: 8px;
+                    align-items: center;
+                    margin-bottom: 12px;
+                  "
+                >
+                  <div
+                    style="
+                      width: 30px;
+                      height: 30px;
+                      border-radius: 50%;
+                      background: var(--brand);
+                    "
+                  ></div>
+                  <div style="flex: 1">
+                    <div
+                      class="mk-bar"
+                      style="width: 60%; margin-bottom: 5px"
+                    ></div>
+                    <div class="mk-bar" style="width: 40%; height: 5px"></div>
+                  </div>
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 8px;
+                  "
+                >
+                  <div
+                    style="
+                      background: var(--paper);
+                      border: 1px solid var(--line);
+                      border-radius: 8px;
+                      height: 64px;
+                    "
+                  ></div>
+                  <div
+                    style="
+                      background: var(--paper);
+                      border: 1px solid var(--line);
+                      border-radius: 8px;
+                      height: 64px;
+                    "
+                  ></div>
+                  <div
+                    style="
+                      background: var(--paper);
+                      border: 1px solid var(--line);
+                      border-radius: 8px;
+                      height: 64px;
+                    "
+                  ></div>
+                  <div
+                    style="
+                      background: var(--paper);
+                      border: 1px solid var(--line);
+                      border-radius: 8px;
+                      height: 64px;
+                    "
+                  ></div>
+                </div>
+              </div>
+            </div>
+            <div class="meta">
+              <h3>Public Profile</h3>
+              <p>
+                Your verified wall of endorsements — what recruiters and clients
+                see.
+              </p>
+              <span class="go">View profile →</span>
+            </div>
+          </a>
+          <a class="screen-card" href="screens/Admin Dashboard.html">
+            <div class="thumb" style="background: var(--ink)">
+              <div class="mk">
+                <div style="display: flex; gap: 6px; margin-bottom: 12px">
+                  <div
+                    style="
+                      width: 46px;
+                      height: 14px;
+                      border-radius: 7px;
+                      background: var(--brand);
+                    "
+                  ></div>
+                  <div
+                    style="
+                      width: 34px;
+                      height: 14px;
+                      border-radius: 7px;
+                      background: oklch(0.34 0.02 256);
+                    "
+                  ></div>
+                  <div
+                    style="
+                      width: 34px;
+                      height: 14px;
+                      border-radius: 7px;
+                      background: oklch(0.34 0.02 256);
+                    "
+                  ></div>
+                </div>
+                <div
+                  style="
+                    background: oklch(0.3 0.018 256);
+                    border-radius: 8px;
+                    height: 50px;
+                    margin-bottom: 8px;
+                    border-left: 3px solid var(--amber);
+                  "
+                ></div>
+                <div
+                  style="
+                    background: oklch(0.3 0.018 256);
+                    border-radius: 8px;
+                    height: 50px;
+                    margin-bottom: 8px;
+                    border-left: 3px solid var(--verified);
+                  "
+                ></div>
+                <div
+                  style="
+                    background: oklch(0.3 0.018 256);
+                    border-radius: 8px;
+                    height: 50px;
+                    border-left: 3px solid var(--amber);
+                  "
+                ></div>
+              </div>
+            </div>
+            <div class="meta">
+              <h3>Admin Dashboard</h3>
+              <p>
+                Review, verify, approve or decline before anything goes public.
+              </p>
+              <span class="go">Open dashboard →</span>
+            </div>
+          </a>
+          <a class="screen-card" href="screens/Submit Review.html">
+            <div
+              class="thumb"
+              style="
+                background: linear-gradient(
+                  160deg,
+                  var(--brand-tint),
+                  var(--paper-2)
+                );
+              "
+            >
+              <div class="mk">
+                <div
+                  style="
+                    background: var(--paper);
+                    border: 1px solid var(--line);
+                    border-radius: 10px;
+                    padding: 12px;
+                    box-shadow: var(--shadow-md);
+                  "
+                >
+                  <div
+                    class="mk-bar"
+                    style="width: 50%; margin-bottom: 10px; height: 7px"
+                  ></div>
+                  <div
+                    style="
+                      background: var(--paper-2);
+                      border: 1px solid var(--line);
+                      border-radius: 6px;
+                      height: 18px;
+                      margin-bottom: 8px;
+                    "
+                  ></div>
+                  <div
+                    style="
+                      background: var(--paper-2);
+                      border: 1px solid var(--line);
+                      border-radius: 6px;
+                      height: 40px;
+                      margin-bottom: 10px;
+                    "
+                  ></div>
+                  <div
+                    style="
+                      width: 44px;
+                      height: 16px;
+                      border-radius: 8px;
+                      background: var(--brand);
+                    "
+                  ></div>
+                </div>
+              </div>
+            </div>
+            <div class="meta">
+              <h3>Submit a Review</h3>
+              <p>The friendly, guided form a former colleague fills in.</p>
+              <span class="go">Try the form →</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Footer ===== -->
+    <footer class="foot" style="background: var(--ink); color: var(--paper)">
+      <div class="wrap between" style="flex-wrap: wrap; gap: 24px">
+        <span class="brandmark on-dark">
+          <svg
+            class="mark"
+            viewBox="0 0 32 32"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+            style="color: var(--on-brand)"
+          >
+            <path
+              d="M6 4h20a4 4 0 0 1 4 4v11a4 4 0 0 1-4 4H15l-6.4 5.2a.8.8 0 0 1-1.3-.62V23H6a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4z"
+              fill="currentColor"
+            />
+            <path
+              d="M10.2 14.3l3.7 3.8 7.9-8.4"
+              stroke="var(--ink)"
+              stroke-width="2.7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          Vouch
+        </span>
+        <span class="muted" style="color: oklch(0.7 0.015 256); font-size: 14px"
+          >Brand &amp; design system — built for the people who'd hire you
+          again.</span
+        >
+      </div>
+    </footer>
+  </body>
+</html>

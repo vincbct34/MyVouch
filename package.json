@@ -1,0 +1,41 @@
+{
+  "name": "vouch",
+  "version": "1.0.0",
+  "description": "Vouch — verified endorsements. Collect, verify, and publish trusted references.",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "seed": "node scripts/seed.mjs",
+    "test": "node --experimental-strip-types --test tests/*.test.ts"
+  },
+  "engines": {
+    "node": ">=22.6"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.6.2",
+    "next": "^15.5.4",
+    "nodemailer": "^9.0.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "overrides": {
+    "postcss": "8.5.15"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "@eslint/eslintrc": "^3.2.0",
+    "eslint": "^9.39.0",
+    "eslint-config-next": "^15.5.19",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.0"
+  }
+}

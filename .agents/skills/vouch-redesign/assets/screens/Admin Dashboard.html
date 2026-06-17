@@ -1,0 +1,1031 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Moderation — Vouch Admin</title>
+    <link rel="stylesheet" href="../assets/brand.css" />
+    <style>
+      body {
+        background: var(--paper-2);
+      }
+      .admin-head {
+        background: var(--ink);
+        color: var(--paper);
+      }
+      .admin-head .wrap {
+        padding: 30px 28px 0;
+      }
+      .ah-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+      .ah-top h1 {
+        font-size: clamp(1.6rem, 3vw, 2.1rem);
+      }
+      .ah-top p {
+        color: oklch(0.74 0.015 256);
+        margin-top: 6px;
+        font-size: 15px;
+      }
+      .kpis {
+        display: flex;
+        gap: 26px;
+        flex-wrap: wrap;
+        padding: 26px 0 30px;
+      }
+      .kpi {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .kpi .n {
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+      }
+      .kpi .n.amber {
+        color: var(--amber);
+      }
+      .kpi .n.green {
+        color: oklch(0.72 0.12 168);
+      }
+      .kpi .l {
+        font-size: 12.5px;
+        color: oklch(0.7 0.015 256);
+        font-weight: 500;
+      }
+      .kpi + .kpi {
+        border-left: 1px solid oklch(0.34 0.02 256);
+        padding-left: 26px;
+      }
+
+      .tabbar {
+        background: var(--ink);
+        border-bottom: 1px solid oklch(0.32 0.02 256);
+        position: sticky;
+        top: 0;
+        z-index: 40;
+      }
+      .tabbar .wrap {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding-block: 0;
+      }
+      .tabs {
+        display: flex;
+        gap: 2px;
+      }
+      .tabs button {
+        font-size: 14.5px;
+        font-weight: 600;
+        color: oklch(0.72 0.015 256);
+        padding: 16px 18px;
+        border-bottom: 2.5px solid transparent;
+        display: inline-flex;
+        gap: 9px;
+        align-items: center;
+        transition: color 0.15s;
+      }
+      .tabs button .ct {
+        font-family: var(--mono);
+        font-size: 11px;
+        background: oklch(0.34 0.02 256);
+        border-radius: var(--r-pill);
+        padding: 1px 8px;
+        color: oklch(0.8 0.015 256);
+      }
+      .tabs button:hover {
+        color: var(--paper);
+      }
+      .tabs button.active {
+        color: var(--paper);
+        border-bottom-color: var(--brand);
+      }
+      .tabs button.active .ct {
+        background: var(--brand);
+        color: var(--on-brand);
+      }
+      .searchbox {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        background: oklch(0.3 0.018 256);
+        border: 1px solid oklch(0.36 0.02 256);
+        border-radius: var(--r-pill);
+        padding: 8px 15px;
+        color: oklch(0.78 0.015 256);
+        font-size: 13.5px;
+      }
+      .searchbox input {
+        background: none;
+        border: 0;
+        outline: 0;
+        color: var(--paper);
+        width: 150px;
+      }
+      .searchbox input::placeholder {
+        color: oklch(0.6 0.015 256);
+      }
+
+      .queue {
+        padding: 28px 0 70px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .mod {
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: var(--r-lg);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: 5px 1fr;
+        transition:
+          box-shadow 0.18s ease,
+          opacity 0.3s ease,
+          transform 0.3s ease;
+      }
+      .mod:hover {
+        box-shadow: var(--shadow-md);
+      }
+      .mod .rail {
+        background: var(--amber);
+      }
+      .mod[data-status="approved"] .rail {
+        background: var(--verified);
+      }
+      .mod[data-status="declined"] .rail {
+        background: var(--rose);
+      }
+      .mod .inner {
+        padding: 22px 26px;
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 30px;
+      }
+
+      .mod .lead {
+        min-width: 0;
+      }
+      .mod .author {
+        display: flex;
+        gap: 13px;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+      .mod .author .who .nm {
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: -0.01em;
+      }
+      .mod .author .who .rl {
+        font-size: 13.5px;
+        color: var(--ink-soft);
+      }
+      .mod .text {
+        font-family: var(--serif);
+        font-size: 19px;
+        line-height: 1.5;
+        color: var(--ink);
+        letter-spacing: -0.01em;
+      }
+      .mod .text em {
+        font-style: italic;
+        color: var(--brand-deep);
+      }
+      .mod .tags {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+        align-items: center;
+      }
+
+      .mod .side {
+        border-left: 1px solid var(--line);
+        padding-left: 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .verify-list {
+        display: flex;
+        flex-direction: column;
+        gap: 11px;
+      }
+      .verify-list .v {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        font-size: 13px;
+        line-height: 1.45;
+        color: var(--ink-2);
+      }
+      .verify-list .v .ic {
+        width: 16px;
+        height: 16px;
+        color: var(--verified);
+        flex: none;
+        margin-top: 1px;
+      }
+      .verify-list .v .ic.muted {
+        color: var(--ink-faint);
+      }
+      .verify-list .v strong {
+        color: var(--ink);
+        font-weight: 600;
+      }
+      .actions {
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+        margin-top: auto;
+      }
+      .actions .btn {
+        width: 100%;
+      }
+      .resolved-note {
+        font-size: 13px;
+        color: var(--ink-soft);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .resolved-note .ic {
+        width: 16px;
+        height: 16px;
+      }
+
+      .empty {
+        text-align: center;
+        padding: 80px 20px;
+        color: var(--ink-soft);
+      }
+      .empty .big {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--ink);
+        margin-top: 14px;
+      }
+
+      /* toast */
+      #toast {
+        position: fixed;
+        bottom: 26px;
+        left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        opacity: 0;
+        pointer-events: none;
+        background: var(--ink);
+        color: var(--paper);
+        padding: 13px 20px;
+        border-radius: var(--r-pill);
+        box-shadow: var(--shadow-lg);
+        font-size: 14.5px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition:
+          opacity 0.25s ease,
+          transform 0.25s ease;
+        z-index: 100;
+      }
+      #toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+      #toast .ic {
+        width: 18px;
+        height: 18px;
+      }
+
+      @media (max-width: 860px) {
+        .mod .inner {
+          grid-template-columns: 1fr;
+          gap: 20px;
+        }
+        .mod .side {
+          border-left: 0;
+          border-top: 1px solid var(--line);
+          padding-left: 0;
+          padding-top: 18px;
+        }
+        .searchbox {
+          display: none;
+        }
+        .kpi + .kpi {
+          border-left: 0;
+          padding-left: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ===== Admin header ===== -->
+    <header class="admin-head">
+      <div class="wrap">
+        <div class="ah-top">
+          <div class="center" style="gap: 14px">
+            <a class="brandmark on-dark" href="../Design System.html">
+              <svg
+                class="mark"
+                viewBox="0 0 32 32"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+                style="color: var(--on-brand)"
+              >
+                <path
+                  d="M6 4h20a4 4 0 0 1 4 4v11a4 4 0 0 1-4 4H15l-6.4 5.2a.8.8 0 0 1-1.3-.62V23H6a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M10.2 14.3l3.7 3.8 7.9-8.4"
+                  stroke="var(--ink)"
+                  stroke-width="2.7"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+              Vouch
+            </a>
+            <span
+              class="badge"
+              style="
+                background: oklch(0.32 0.02 256);
+                color: oklch(0.82 0.015 256);
+              "
+              >ADMIN</span
+            >
+          </div>
+          <div class="center" style="gap: 12px">
+            <a
+              class="btn btn-ghost btn-sm"
+              href="Public Profile.html"
+              style="
+                background: oklch(0.3 0.018 256);
+                border-color: oklch(0.36 0.02 256);
+                color: var(--paper);
+              "
+              >View public profile</a
+            >
+            <span class="avatar sm a1">DM</span>
+          </div>
+        </div>
+        <div style="margin-top: 22px">
+          <h1>Moderation queue</h1>
+          <p>
+            Review each endorsement, confirm the working relationship, then
+            publish or decline. Nothing is public until you say so.
+          </p>
+        </div>
+        <div class="kpis">
+          <div class="kpi">
+            <span class="n amber" id="kpiPending">3</span
+            ><span class="l">Awaiting review</span>
+          </div>
+          <div class="kpi">
+            <span class="n green" id="kpiApproved">21</span
+            ><span class="l">Published</span>
+          </div>
+          <div class="kpi">
+            <span class="n">4.9</span
+            ><span class="l">Avg. published rating</span>
+          </div>
+          <div class="kpi">
+            <span class="n">2</span><span class="l">Declined this month</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===== Tabs ===== -->
+    <div class="tabbar">
+      <div class="wrap">
+        <div class="tabs">
+          <button class="active" data-tab="pending">
+            Pending <span class="ct" id="tPending">3</span>
+          </button>
+          <button data-tab="approved">
+            Published <span class="ct">21</span>
+          </button>
+          <button data-tab="declined">
+            Declined <span class="ct">2</span>
+          </button>
+          <button data-tab="all">All <span class="ct">26</span></button>
+        </div>
+        <div class="searchbox">
+          <svg
+            class="ic"
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.2"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="M21 21l-4-4" />
+          </svg>
+          <input type="text" placeholder="Search reviewers…" />
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Queue ===== -->
+    <div class="wrap">
+      <div class="queue" id="queue">
+        <!-- Pending 1 -->
+        <article class="mod" data-status="pending">
+          <div class="rail"></div>
+          <div class="inner">
+            <div class="lead">
+              <div class="author">
+                <span class="avatar a4">EO</span>
+                <span class="who">
+                  <span class="nm">Elif Önder</span>
+                  <span class="rl">Design Director · Cartograph</span>
+                </span>
+                <span style="margin-left: auto" class="badge badge-pending"
+                  ><span class="dot"></span>Pending</span
+                >
+              </div>
+              <p class="text">
+                Daniel has a quiet way of raising the bar for everyone around
+                him. Our design reviews became the meeting people actually
+                <em>looked forward to</em> — and the work got measurably sharper
+                because of it.
+              </p>
+              <div class="tags">
+                <span class="chip">Former manager</span>
+                <span class="stars" aria-label="5 of 5"
+                  ><svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.6 5.9 21l1.4-6.8L2.2 9.6l6.9-.7z"
+                    /></svg
+                  ><svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.6 5.9 21l1.4-6.8L2.2 9.6l6.9-.7z"
+                    /></svg
+                  ><svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.6 5.9 21l1.4-6.8L2.2 9.6l6.9-.7z"
+                    /></svg
+                  ><svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.6 5.9 21l1.4-6.8L2.2 9.6l6.9-.7z"
+                    /></svg
+                  ><svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.6 5.9 21l1.4-6.8L2.2 9.6l6.9-.7z"
+                    /></svg
+                ></span>
+                <span class="kicker" style="font-size: 11px; margin-left: 4px"
+                  >SUBMITTED 2 HRS AGO</span
+                >
+              </div>
+            </div>
+            <div class="side">
+              <div class="verify-list">
+                <div class="v">
+                  <svg
+                    class="ic"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                  >
+                    <path d="M20 6L9 17l-5-5" /></svg
+                  ><span
+                    ><strong>Work email confirmed</strong
+                    ><br />elif@cartograph.com</span
+                  >
+                </div>
+                <div class="v">
+                  <svg
+                    class="ic"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                  >
+                    <path d="M20 6L9 17l-5-5" /></svg
+                  ><span
+                    ><strong>Overlap verified</strong><br />Cartograph ·
+                    2021–2023</span
+                  >
+                </div>
+                <div class="v">
+                  <svg
+                    class="ic muted"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                  >
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M12 8v4l3 2" /></svg
+                  ><span>LinkedIn link pending</span>
+                </div>
+              </div>
+              <div class="actions">
+                <button
+                  class="btn btn-verified"
+                  onclick="resolve(this, 'approved')"
+                >
+                  <svg
+                    class="ic"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                  >
+                    <path d="M20 6L9 17l-5-5" /></svg
+                  >Approve &amp; publish
+                </button>
+                <div style="display: flex; gap: 9px">
+                  <button
+                    class="btn btn-ghost btn-sm"
+                    style="flex: 1"
+                    onclick="toast('Edit request sent to Elif')"
+                  >
+                    Request edit
+                  </button>
+                  <button
+                    class="btn btn-rose btn-sm"
+                    style="flex: 1"
+                    onclick="resolve(this, 'declined')"
+                  >
+                    Decline
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Pending 2 -->
+        <article class="mod" data-status="pending">
+          <div class="rail"></div>
+          <div class="inner">
+            <div class="lead">
+              <div class="author">
+                <span class="avatar a5">TC</span>
+                <span class="who">
+                  <span class="nm">Theo Castellanos</span>
+                  <span class="rl">CEO · Milepost</span>
+                </span>
+                <span style="margin-left: auto" class="badge badge-pending"
+                  ><span class="dot"></span>Pending</span
+                >
+              </div>
+              <p class="text">
+                We hired him for a logo and got a whole design language. Three
+                years on we still use the system he built — that's the
+                <em>highest praise</em> I can give a designer.
+              </p>
+              <div class="tags">
+                <span class="chip chip-solid">Client</span>
+                <span class="stars" aria-label="5 of 5"
+                  ><svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.6 5.9 21l1.4-6.8L2.2 9.6l6.9-.7z"
+                    /></svg
+                  ><svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.6 5.9 21l1.4-6.8L2.2 9.6l6.9-.7z"
+                    /></svg
+                  ><svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.6 5.9 21l1.4-6.8L2.2 9.6l6.9-.7z"
+                    /></svg
+                  ><svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.6 5.9 21l1.4-6.8L2.2 9.6l6.9-.7z"
+                    /></svg
+                  ><svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.6 5.9 21l1.4-6.8L2.2 9.6l6.9-.7z"
+                    /></svg
+                ></span>
+                <span class="kicker" style="font-size: 11px; margin-left: 4px"
+                  >SUBMITTED YESTERDAY</span
+                >
+              </div>
+            </div>
+            <div class="side">
+              <div class="verify-list">
+                <div class="v">
+                  <svg
+                    class="ic"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                  >
+                    <path d="M20 6L9 17l-5-5" /></svg
+                  ><span
+                    ><strong>Work email confirmed</strong
+                    ><br />theo@milepost.io</span
+                  >
+                </div>
+                <div class="v">
+                  <svg
+                    class="ic"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                  >
+                    <path d="M20 6L9 17l-5-5" /></svg
+                  ><span
+                    ><strong>Engagement on file</strong><br />Invoice ref · Q3
+                    2023</span
+                  >
+                </div>
+                <div class="v">
+                  <svg
+                    class="ic"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                  >
+                    <path d="M20 6L9 17l-5-5" /></svg
+                  ><span><strong>LinkedIn matched</strong></span>
+                </div>
+              </div>
+              <div class="actions">
+                <button
+                  class="btn btn-verified"
+                  onclick="resolve(this, 'approved')"
+                >
+                  <svg
+                    class="ic"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                  >
+                    <path d="M20 6L9 17l-5-5" /></svg
+                  >Approve &amp; publish
+                </button>
+                <div style="display: flex; gap: 9px">
+                  <button
+                    class="btn btn-ghost btn-sm"
+                    style="flex: 1"
+                    onclick="toast('Edit request sent to Theo')"
+                  >
+                    Request edit
+                  </button>
+                  <button
+                    class="btn btn-rose btn-sm"
+                    style="flex: 1"
+                    onclick="resolve(this, 'declined')"
+                  >
+                    Decline
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Pending 3 — weaker verification, flagged -->
+        <article class="mod" data-status="pending">
+          <div class="rail"></div>
+          <div class="inner">
+            <div class="lead">
+              <div class="author">
+                <span class="avatar a6">AN</span>
+                <span class="who">
+                  <span class="nm">Anon. (unverified)</span>
+                  <span class="rl">Claims: former teammate</span>
+                </span>
+                <span style="margin-left: auto" class="badge badge-declined"
+                  ><span class="dot"></span>Needs attention</span
+                >
+              </div>
+              <p class="text">
+                Great guy, would recommend to anyone. Solid work and very
+                professional all round.
+              </p>
+              <div class="tags">
+                <span class="chip">Peer</span>
+                <span class="stars" aria-label="4 of 5"
+                  ><svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.6 5.9 21l1.4-6.8L2.2 9.6l6.9-.7z"
+                    /></svg
+                  ><svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.6 5.9 21l1.4-6.8L2.2 9.6l6.9-.7z"
+                    /></svg
+                  ><svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.6 5.9 21l1.4-6.8L2.2 9.6l6.9-.7z"
+                    /></svg
+                  ><svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.6 5.9 21l1.4-6.8L2.2 9.6l6.9-.7z"
+                    /></svg
+                  ><svg class="off" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.6 5.9 21l1.4-6.8L2.2 9.6l6.9-.7z"
+                    /></svg
+                ></span>
+                <span class="kicker" style="font-size: 11px; margin-left: 4px"
+                  >SUBMITTED 3 DAYS AGO</span
+                >
+              </div>
+            </div>
+            <div class="side">
+              <div class="verify-list">
+                <div class="v">
+                  <svg
+                    class="ic muted"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                  >
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M12 7v6M12 16v.5" /></svg
+                  ><span
+                    ><strong style="color: var(--rose-deep)"
+                      >Email unconfirmed</strong
+                    ><br />Used a personal address</span
+                  >
+                </div>
+                <div class="v">
+                  <svg
+                    class="ic muted"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                  >
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M12 7v6M12 16v.5" /></svg
+                  ><span>No shared employer found</span>
+                </div>
+                <div class="v">
+                  <svg
+                    class="ic muted"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                  >
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M12 8v4l3 2" /></svg
+                  ><span>No LinkedIn provided</span>
+                </div>
+              </div>
+              <div class="actions">
+                <button
+                  class="btn btn-ghost btn-sm"
+                  onclick="toast('Verification request sent')"
+                >
+                  Ask to verify identity
+                </button>
+                <button
+                  class="btn btn-rose btn-sm"
+                  onclick="resolve(this, 'declined')"
+                >
+                  Decline
+                </button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Approved example -->
+        <article class="mod" data-status="approved" hidden>
+          <div class="rail"></div>
+          <div class="inner">
+            <div class="lead">
+              <div class="author">
+                <span class="avatar a2">PR</span>
+                <span class="who">
+                  <span class="nm">Priya Raman</span>
+                  <span class="rl">VP Product · Northwind</span>
+                </span>
+                <span style="margin-left: auto" class="badge badge-verified"
+                  ><span class="dot"></span>Published</span
+                >
+              </div>
+              <p class="text">
+                One of the rare designers who makes the whole team
+                <em>better</em>. Calm under pressure and relentless about the
+                details that move the needle.
+              </p>
+              <div class="tags">
+                <span class="chip">Former manager</span>
+                <span class="kicker" style="font-size: 11px"
+                  >PUBLISHED MAR 2026</span
+                >
+              </div>
+            </div>
+            <div class="side">
+              <div class="resolved-note">
+                <svg
+                  class="ic"
+                  viewBox="0 0 24 24"
+                  fill="var(--verified)"
+                  stroke="white"
+                  stroke-width="2.4"
+                >
+                  <circle cx="12" cy="12" r="11" />
+                  <path d="M17 9l-6 6-3-3" fill="none" /></svg
+                >Live on your public profile
+              </div>
+              <div class="actions">
+                <button
+                  class="btn btn-ghost btn-sm"
+                  onclick="toast('Opened on public profile')"
+                >
+                  View on profile
+                </button>
+                <button
+                  class="btn btn-ghost btn-sm"
+                  onclick="toast('Review unpublished')"
+                >
+                  Unpublish
+                </button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Declined example -->
+        <article class="mod" data-status="declined" hidden>
+          <div class="rail"></div>
+          <div class="inner">
+            <div class="lead">
+              <div class="author">
+                <span class="avatar a3">RX</span>
+                <span class="who">
+                  <span class="nm">Unknown reviewer</span>
+                  <span class="rl">Relationship could not be verified</span>
+                </span>
+                <span style="margin-left: auto" class="badge badge-declined"
+                  ><span class="dot"></span>Declined</span
+                >
+              </div>
+              <p class="text" style="color: var(--ink-soft)">
+                Generic review with no verifiable working relationship.
+              </p>
+              <div class="tags">
+                <span class="kicker" style="font-size: 11px"
+                  >DECLINED · NOT PUBLISHED</span
+                >
+              </div>
+            </div>
+            <div class="side">
+              <div class="resolved-note">
+                <svg
+                  class="ic"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--rose)"
+                  stroke-width="2.4"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M15 9l-6 6M9 9l6 6" /></svg
+                >Hidden — not shown publicly
+              </div>
+              <div class="actions">
+                <button
+                  class="btn btn-ghost btn-sm"
+                  onclick="toast('Review restored to pending')"
+                >
+                  Restore
+                </button>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div class="empty" id="empty" hidden>
+        <svg
+          width="40"
+          height="40"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="var(--verified)"
+          stroke-width="2"
+          style="margin: 0 auto"
+        >
+          <path d="M20 6L9 17l-5-5" />
+        </svg>
+        <div class="big">You're all caught up</div>
+        <p>
+          No items in this view. New endorsements will appear here as they
+          arrive.
+        </p>
+      </div>
+    </div>
+
+    <!-- toast -->
+    <div id="toast">
+      <svg
+        class="ic"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.4"
+      >
+        <path d="M20 6L9 17l-5-5" /></svg
+      ><span id="toastMsg">Done</span>
+    </div>
+
+    <script>
+      const queue = document.getElementById("queue");
+      let activeTab = "pending";
+
+      function applyTab() {
+        let visible = 0;
+        queue.querySelectorAll(".mod").forEach((card) => {
+          const st = card.getAttribute("data-status");
+          const show = activeTab === "all" || st === activeTab;
+          card.hidden = !show;
+          if (show) visible++;
+        });
+        document.getElementById("empty").hidden = visible !== 0;
+      }
+
+      document.querySelectorAll(".tabs button").forEach((b) => {
+        b.addEventListener("click", () => {
+          document
+            .querySelectorAll(".tabs button")
+            .forEach((x) => x.classList.remove("active"));
+          b.classList.add("active");
+          activeTab = b.getAttribute("data-tab");
+          applyTab();
+        });
+      });
+
+      function recount() {
+        const pend = queue.querySelectorAll(
+          '.mod[data-status="pending"]:not([data-removed])',
+        ).length;
+        document.getElementById("kpiPending").textContent = pend;
+        document.getElementById("tPending").textContent = pend;
+      }
+
+      let toastTimer;
+      function toast(msg) {
+        const t = document.getElementById("toast");
+        document.getElementById("toastMsg").textContent = msg;
+        t.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+      }
+
+      function resolve(btn, status) {
+        const card = btn.closest(".mod");
+        card.style.opacity = "0";
+        card.style.transform = "translateY(-8px)";
+        setTimeout(() => {
+          card.setAttribute("data-status", status);
+          card.setAttribute("data-removed", "");
+          card.style.opacity = "";
+          card.style.transform = "";
+          // swap the side + badge to a resolved state
+          const badge = card.querySelector(".author .badge");
+          if (status === "approved") {
+            badge.className = "badge badge-verified";
+            badge.innerHTML = '<span class="dot"></span>Published';
+          } else {
+            badge.className = "badge badge-declined";
+            badge.innerHTML = '<span class="dot"></span>Declined';
+          }
+          card.querySelector(".side").innerHTML =
+            status === "approved"
+              ? '<div class="resolved-note"><svg class="ic" viewBox="0 0 24 24" fill="var(--verified)" stroke="white" stroke-width="2.4"><circle cx="12" cy="12" r="11"/><path d="M17 9l-6 6-3-3" fill="none"/></svg>Live on your public profile</div>'
+              : '<div class="resolved-note"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="var(--rose)" stroke-width="2.4"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>Hidden — not shown publicly</div>';
+          recount();
+          applyTab();
+          toast(
+            status === "approved"
+              ? "Published to your profile ✓"
+              : "Review declined",
+          );
+        }, 280);
+      }
+
+      applyTab();
+    </script>
+  </body>
+</html>
