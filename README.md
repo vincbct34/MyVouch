@@ -135,3 +135,15 @@ that explicit:
 The schema is defined once in **`lib/schema.sql`** and shared by the app and the
 seed script; `lib/db.ts` reconciles older databases by adding any missing
 columns on connect.
+
+## License
+
+This project is licensed under the **Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International** (CC-BY-NC-ND 4.0).
+
+You are free to share this work under the condition that you:
+
+- Give credit to the original author
+- Do not use it for commercial purposes
+- Do not create modified or derivative versions
+
+See [LICENSE](./LICENSE) for details, or visit [creativecommons.org](https://creativecommons.org/licenses/by-nc-nd/4.0/).
