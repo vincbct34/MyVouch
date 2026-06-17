@@ -4,7 +4,7 @@ import { setEmailConfirmToken, canResendUserConfirm } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { rateLimitAll, clientIp } from "@/lib/ratelimit";
 import { isSameOrigin } from "@/lib/http";
-import { sendMail } from "@/lib/email";
+import { enqueueMail } from "@/lib/outbox";
 import { appBaseUrl } from "@/lib/url";
 
 /** Owner-initiated resend of their own email confirmation link (cooldown-gated). */
@@ -39,13 +39,11 @@ export async function POST(req: Request) {
   const token = crypto.randomBytes(32).toString("hex");
   setEmailConfirmToken(user.id, token);
   const link = `${appBaseUrl(req)}/confirm-email/${token}`;
-  void sendMail({
+  enqueueMail({
     to: user.email,
     subject: "Confirm your email for Vouch",
     text: `Confirm your email to unlock verified endorsement signals:\n\n${link}\n`,
     html: `<p>Confirm your email to unlock verified endorsement signals:</p><p><a href="${link}">Confirm my email</a></p>`,
-  }).catch((err) => {
-    console.error("Owner confirmation email failed to send:", err);
   });
 
   return NextResponse.json({ ok: true });

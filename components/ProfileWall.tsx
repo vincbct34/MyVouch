@@ -22,27 +22,32 @@ const FILTER_ORDER: Filter[] = [
 export function ProfileWall({
   slug,
   initial,
+  initialCursor,
   total,
 }: {
   slug: string;
   initial: PublicEndorsement[];
+  initialCursor: string | null;
   total: number;
 }) {
   const [filter, setFilter] = useState<Filter>("all");
   const [endorsements, setEndorsements] =
     useState<PublicEndorsement[]>(initial);
   const [loading, setLoading] = useState(false);
-  const hasMore = endorsements.length < total;
+  // Keyset cursor for the next page (computed server-side from the SSR'd first
+  // page); null once there are no more rows to fetch.
+  const [cursor, setCursor] = useState<string | null>(initialCursor);
+  const hasMore = cursor !== null && endorsements.length < total;
 
   async function loadMore() {
     setLoading(true);
     try {
-      const res = await fetch(
-        `/api/u/${slug}/endorsements?offset=${endorsements.length}`,
-      );
+      const qs = cursor ? `?cursor=${encodeURIComponent(cursor)}` : "";
+      const res = await fetch(`/api/u/${slug}/endorsements${qs}`);
       if (res.ok) {
         const json = await res.json();
         const next = (json.endorsements ?? []) as PublicEndorsement[];
+        setCursor((json.nextCursor ?? null) as string | null);
         // De-dupe by id in case of overlap; append the rest.
         setEndorsements((cur) => {
           const seen = new Set(cur.map((e) => e.id));

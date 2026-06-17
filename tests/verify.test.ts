@@ -13,7 +13,6 @@ function owner(email: string, emailConfirmed: number): User {
     headline: null,
     location: null,
     linkedin_url: null,
-    identity_verified: 0,
     open_to_work: 0,
     email_confirmed: emailConfirmed,
     email_confirm_token: null,

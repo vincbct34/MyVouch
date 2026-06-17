@@ -15,7 +15,7 @@ import {
 import { slugify } from "@/lib/ui";
 import { rateLimitAll, clientIp } from "@/lib/ratelimit";
 import { isSameOrigin } from "@/lib/http";
-import { sendMail } from "@/lib/email";
+import { enqueueMail } from "@/lib/outbox";
 import { appBaseUrl } from "@/lib/url";
 
 export async function POST(req: Request) {
@@ -111,13 +111,11 @@ export async function POST(req: Request) {
   const emailToken = crypto.randomBytes(32).toString("hex");
   setEmailConfirmToken(id, emailToken);
   const link = `${appBaseUrl(req)}/confirm-email/${emailToken}`;
-  void sendMail({
+  enqueueMail({
     to: email,
     subject: "Confirm your email for Vouch",
     text: `Welcome to Vouch. Confirm your email to unlock verified endorsement signals:\n\n${link}\n`,
     html: `<p>Welcome to Vouch.</p><p>Confirm your email to unlock verified endorsement signals:</p><p><a href="${link}">Confirm my email</a></p>`,
-  }).catch((err) => {
-    console.error("Owner confirmation email failed to send:", err);
   });
 
   const res = NextResponse.json({ ok: true, slug });

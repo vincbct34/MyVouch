@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/session";
-import { getEndorsementsForOwner } from "@/lib/db";
+import { getEndorsementsForOwner, getAuditLog } from "@/lib/db";
 import { appBaseUrl } from "@/lib/url";
 import { Brandmark } from "@/components/Brandmark";
 import { Avatar } from "@/components/Avatar";
 import { ModerationQueue } from "@/components/ModerationQueue";
 import { ProfileSettings } from "@/components/ProfileSettings";
 import { SecuritySettings } from "@/components/SecuritySettings";
+import { AuditLog } from "@/components/AuditLog";
 import {
   CopyLink,
   LogoutButton,
@@ -23,6 +24,7 @@ export default async function DashboardPage() {
   // Owner queue computes its KPIs client-side, so load the full set (capped to a
   // sane bound). The public wall is the unbounded surface and pages separately.
   const endorsements = getEndorsementsForOwner(user.id, { limit: 500 });
+  const auditEntries = getAuditLog(user.id);
   const vouchUrl = `${appBaseUrl()}/u/${user.slug}/vouch`;
 
   return (
@@ -54,6 +56,7 @@ export default async function DashboardPage() {
           openToWork={!!user.open_to_work}
         />
         <SecuritySettings />
+        <AuditLog entries={auditEntries} />
       </div>
 
       <ModerationQueue initial={endorsements} />

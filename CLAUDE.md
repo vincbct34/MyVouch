@@ -52,9 +52,31 @@ lives there, exported as named functions (`getUserBySlug`, `createEndorsement`,
 `moderateEndorsement`, …). Schema is defined once in `lib/schema.sql` (shared by
 the app and `scripts/seed.mjs`). `migrate()` reconciles older `vouch.db` files by
 ALTERing in missing columns from `EXPECTED_COLUMNS` — when you add a column, add
-it to both `schema.sql` and that map. The connection is a per-process singleton
-on `globalThis`; queries are **synchronous and block the event loop** (fine for
-one instance, the deliberate scaling ceiling).
+it to both `schema.sql` and that map. **`connect()` order is load-bearing:**
+`dedupePending` → `migrate` → `db.exec(schema.sql)`. `migrate` must run _before_
+the schema applies, because `schema.sql` (re)creates indexes that may reference a
+just-added column (e.g. `idx_end_manage` on `manage_token`) — applying it first
+would fail on a legacy DB whose table lacks that column. `migrate` skips tables
+that don't exist yet (fresh DB). `connect()` also sets `PRAGMA foreign_keys = ON`
+(off by default, per-connection) so the `ON DELETE CASCADE`s actually fire. The
+connection is a per-process singleton on `globalThis`; queries are **synchronous
+and block the event loop** (fine for one instance, the deliberate scaling
+ceiling).
+
+**Public wall pagination is keyset, not OFFSET.** `getApprovedEndorsements` takes
+an opaque `Cursor` ((`resolved_at`, `id`), base64) and orders by
+`resolved_at DESC, id DESC` — served from `idx_end_wall`. The SSR page seeds the
+first cursor; `GET /api/u/[slug]/endorsements?cursor=…` returns the next page plus
+`nextCursor` (null when exhausted). Don't reintroduce `LIMIT … OFFSET` here.
+
+**Email goes through a durable outbox, never fire-and-forget.** Send via
+`enqueueMail` (`lib/outbox.ts`), not `sendMail` (`lib/email.ts`) directly:
+`enqueueMail` persists the message to `email_outbox` first, then attempts an
+immediate background send, and a 60s sweep retries anything still unsent (failed
+or never picked up) up to `MAX_ATTEMPTS`. A provider blip therefore never silently
+drops a verification link. `lib/email.ts` stays the low-level sender (Resend via
+`fetch`, or a dev-console fallback when `RESEND_API_KEY` is unset) and the only
+direct caller of it is the outbox.
 
 **Verification signals are earned booleans, never assumed.** An endorsement
 carries three independent flags: `email_confirmed` (reviewer clicked the one-time
@@ -63,7 +85,15 @@ automatically when reviewer + owner email domains match and the domain is not
 free-mail — see the `FREE_MAIL` set in `lib/verify.ts`), and `linkedin_matched`
 (owner toggles manually from the queue). Public badges/counts must reflect only
 endorsements that actually carry a verified signal — nothing is "verified" by
-default.
+default. (A hardcoded `identity_verified` owner badge with no way to earn it was
+removed for exactly this reason — don't add a badge a signal can't earn.)
+
+**Reviewers own their words — withdrawal via `manage_token`.** Each endorsement
+gets a stable `manage_token` (minted at creation, never rotated/cleared, unlike
+the single-use `confirm_token`) mailed to the reviewer. `/manage/[token]` lets
+them withdraw — a hard delete via `POST /api/endorsements/withdraw`, guarded by
+the standard same-origin → rate-limit chain (no account, the token is the
+credential). The response is generic so the token can't probe what exists.
 
 **Every state-changing API route follows the same guard order:** `isSameOrigin`
 check (`lib/http.ts`, CSRF defense-in-depth → 403) → `getCurrentUser` for
@@ -76,8 +106,10 @@ an account exists.
 
 **Routes** (App Router under `app/`): `/` landing · `/signup` `/login` ·
 `/u/[slug]` public wall · `/u/[slug]/vouch` submission form · `/dashboard` owner
-moderation queue · `/confirm/[token]` reviewer email confirmation. API under
-`app/api/`. Shared React in `components/`, non-React helpers in `lib/`.
+moderation queue (incl. a read-only audit-log panel — see `appendAuditLog` /
+`getAuditLog`) · `/confirm/[token]` reviewer email confirmation ·
+`/manage/[token]` reviewer self-service withdrawal. API under `app/api/`. Shared
+React in `components/`, non-React helpers in `lib/`.
 
 ## Production-mode invariants
 
@@ -88,8 +120,8 @@ mode) if these are missing — set dummy values when building locally/CI:
   placeholders. Falls back to a dev secret only when `NODE_ENV !== production`.
 - `BASE_URL` — required in prod; canonical public links derive from it, **never**
   from untrusted Host headers (`lib/url.ts`).
-- Email — `RESEND_API_KEY` or the `SMTP_*` group must be set in prod (confirmation
-  flow). In dev, unconfigured email logs the link to the console.
+- Email — `RESEND_API_KEY` must be set in prod (confirmation flow). In dev,
+  unconfigured email logs the link to the console.
 - `TRUST_PROXY` defaults to `false`; only set `true` behind a proxy that controls
   `x-forwarded-for` / `x-real-ip`.
 

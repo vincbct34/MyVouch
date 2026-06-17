@@ -33,7 +33,6 @@ export interface User {
   headline: string | null;
   location: string | null;
   linkedin_url: string | null;
-  identity_verified: number;
   open_to_work: number;
   email_confirmed: number;
   email_confirm_token: string | null;
@@ -60,6 +59,7 @@ export interface Endorsement {
   linkedin_matched: number;
   confirm_token: string | null;
   confirm_sent_at: string | null;
+  manage_token: string | null;
   submitted_at: string;
   resolved_at: string | null;
 }
@@ -130,6 +130,7 @@ const EXPECTED_COLUMNS: Record<string, Record<string, string>> = {
     reviewer_linkedin: "TEXT",
     confirm_token: "TEXT",
     confirm_sent_at: "DATETIME",
+    manage_token: "TEXT",
   },
 };
 
@@ -151,6 +152,10 @@ function migrate(db: Database.Database) {
         db.prepare(`PRAGMA table_info(${table})`).all() as { name: string }[]
       ).map((c) => c.name),
     );
+    // Empty == table doesn't exist yet (fresh DB). schema.sql's CREATE TABLE
+    // will define every column, so there's nothing to reconcile — skip, and
+    // crucially don't ALTER a non-existent table (that throws).
+    if (existing.size === 0) continue;
     for (const [name, def] of Object.entries(cols)) {
       if (!existing.has(name)) {
         db.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${def}`);
@@ -202,10 +207,21 @@ function connect(): Database.Database {
   const db = new Database(dbPath);
   db.pragma("journal_mode = WAL");
   db.pragma("busy_timeout = 5000");
-  // Reconcile duplicates BEFORE schema.sql creates the unique partial index.
+  // Enforce REFERENCES ... ON DELETE CASCADE. SQLite leaves foreign keys OFF by
+  // default and the setting is per-connection, so without this the cascades on
+  // endorsements/audit_log silently never fire (orphan rows on user delete).
+  db.pragma("foreign_keys = ON");
+  // Order matters on legacy databases:
+  //  1. dedupePending — clear duplicate pendings before the unique partial index.
+  //  2. migrate       — ALTER missing columns onto EXISTING tables. Must precede
+  //                     schema.sql so indexes built on newly-added columns
+  //                     (e.g. idx_end_manage on manage_token) don't reference a
+  //                     column that doesn't exist yet. No-ops on a fresh DB.
+  //  3. schema.sql    — CREATE TABLE IF NOT EXISTS (defines all columns on a
+  //                     fresh DB) + (re)create indexes, now that columns exist.
   dedupePending(db);
-  db.exec(fs.readFileSync(SCHEMA_PATH, "utf8"));
   migrate(db);
+  db.exec(fs.readFileSync(SCHEMA_PATH, "utf8"));
   return db;
 }
 
@@ -394,18 +410,21 @@ export function createEndorsement(e: {
   employer_overlap_verified?: boolean;
   linkedin_matched?: boolean;
   confirm_token?: string | null;
+  manage_token?: string | null;
 }): number {
   const info = db()
     .prepare(
       `INSERT INTO endorsements
        (user_id, reviewer_name, reviewer_email, reviewer_role, reviewer_company,
         reviewer_linkedin, relationship, rating, body, strengths, email_confirmed,
-        employer_overlap_verified, linkedin_matched, confirm_token, confirm_sent_at)
+        employer_overlap_verified, linkedin_matched, confirm_token, confirm_sent_at,
+        manage_token)
        VALUES
        (@user_id, @reviewer_name, @reviewer_email, @reviewer_role, @reviewer_company,
         @reviewer_linkedin, @relationship, @rating, @body, @strengths, @email_confirmed,
         @employer_overlap_verified, @linkedin_matched, @confirm_token,
-        CASE WHEN @confirm_token IS NULL THEN NULL ELSE CURRENT_TIMESTAMP END)`,
+        CASE WHEN @confirm_token IS NULL THEN NULL ELSE CURRENT_TIMESTAMP END,
+        @manage_token)`,
     )
     .run({
       user_id: e.user_id,
@@ -422,6 +441,7 @@ export function createEndorsement(e: {
       employer_overlap_verified: e.employer_overlap_verified ? 1 : 0,
       linkedin_matched: e.linkedin_matched ? 1 : 0,
       confirm_token: e.confirm_token ?? null,
+      manage_token: e.manage_token ?? null,
     });
   return Number(info.lastInsertRowid);
 }
@@ -431,19 +451,69 @@ export interface Page {
   offset?: number;
 }
 
+/**
+ * Opaque keyset cursor for the public wall. Encodes the (resolved_at, id) of the
+ * last row a client has seen; the next page is everything strictly "after" it in
+ * the wall's `resolved_at DESC, id DESC` order. Keyset (vs OFFSET) keeps deep
+ * pages O(limit) instead of O(offset) and is stable as new rows are published.
+ */
+export interface Cursor {
+  resolvedAt: string;
+  id: number;
+}
+
+export function encodeCursor(e: {
+  resolved_at: string | null;
+  id: number;
+}): string | null {
+  if (!e.resolved_at) return null;
+  return Buffer.from(`${e.resolved_at}|${e.id}`, "utf8").toString("base64url");
+}
+
+export function decodeCursor(raw: string | null | undefined): Cursor | null {
+  if (!raw) return null;
+  try {
+    const decoded = Buffer.from(raw, "base64url").toString("utf8");
+    const sep = decoded.lastIndexOf("|");
+    if (sep < 0) return null;
+    const resolvedAt = decoded.slice(0, sep);
+    const id = Number(decoded.slice(sep + 1));
+    if (!resolvedAt || !Number.isInteger(id)) return null;
+    return { resolvedAt, id };
+  } catch {
+    return null;
+  }
+}
+
 export function getApprovedEndorsements(
   userId: number,
-  page: Page = {},
+  opts: { limit?: number; cursor?: Cursor | null } = {},
 ): Endorsement[] {
-  const limit = page.limit ?? PAGE_SIZE;
-  const offset = page.offset ?? 0;
+  const limit = opts.limit ?? PAGE_SIZE;
+  const cursor = opts.cursor ?? null;
+  // Approved rows always carry a resolved_at, so the keyset comparison is total.
+  if (cursor) {
+    return db()
+      .prepare(
+        `SELECT * FROM endorsements
+         WHERE user_id = ? AND status = 'approved'
+           AND (resolved_at < @ra OR (resolved_at = @ra AND id < @id))
+         ORDER BY resolved_at DESC, id DESC
+         LIMIT @limit`,
+      )
+      .all(userId, {
+        ra: cursor.resolvedAt,
+        id: cursor.id,
+        limit,
+      }) as Endorsement[];
+  }
   return db()
     .prepare(
       `SELECT * FROM endorsements WHERE user_id = ? AND status = 'approved'
-       ORDER BY resolved_at DESC, submitted_at DESC
-       LIMIT ? OFFSET ?`,
+       ORDER BY resolved_at DESC, id DESC
+       LIMIT ?`,
     )
-    .all(userId, limit, offset) as Endorsement[];
+    .all(userId, limit) as Endorsement[];
 }
 
 export function countApprovedEndorsements(userId: number): number {
@@ -619,4 +689,117 @@ export function rotateEndorsementConfirmToken(
     )
     .run(newToken, row.id);
   return newToken;
+}
+
+/* ---------------- Reviewer self-service (withdraw) ---------------- */
+
+/** Minimal view a reviewer sees on /manage/[token] before withdrawing. */
+export interface ManageView {
+  reviewer_name: string;
+  status: Status;
+  owner_name: string;
+  owner_slug: string;
+}
+
+/** Look up an endorsement by its stable manage_token (reviewer-held secret). */
+export function getEndorsementByManageToken(
+  token: string,
+): ManageView | undefined {
+  return db()
+    .prepare(
+      `SELECT e.reviewer_name AS reviewer_name, e.status AS status,
+              u.name AS owner_name, u.slug AS owner_slug
+       FROM endorsements e JOIN users u ON u.id = e.user_id
+       WHERE e.manage_token = ?`,
+    )
+    .get(token) as ManageView | undefined;
+}
+
+/**
+ * Reviewer withdraws their own endorsement via the manage_token from their email.
+ * A withdrawal is a hard delete — the reviewer owns their words and asked for
+ * them gone. Returns true when a row was removed (idempotent: false if already
+ * withdrawn or the token is unknown).
+ */
+export function withdrawEndorsementByManageToken(token: string): boolean {
+  const info = db()
+    .prepare(`DELETE FROM endorsements WHERE manage_token = ?`)
+    .run(token);
+  return info.changes > 0;
+}
+
+/* ---------------- Audit log read ---------------- */
+
+export interface AuditEntry {
+  id: number;
+  action: string;
+  detail: string | null;
+  created_at: string;
+}
+
+/** Most-recent-first slice of an owner's sensitive-action history. */
+export function getAuditLog(userId: number, limit = 50): AuditEntry[] {
+  return db()
+    .prepare(
+      `SELECT id, action, detail, created_at FROM audit_log
+       WHERE user_id = ? ORDER BY id DESC LIMIT ?`,
+    )
+    .all(userId, limit) as AuditEntry[];
+}
+
+/* ---------------- Email outbox ---------------- */
+
+export interface OutboxRow {
+  id: number;
+  recipient: string;
+  subject: string;
+  html: string;
+  body_text: string;
+  attempts: number;
+}
+
+/** Persist a mail for durable, retryable delivery. Returns the new row id. */
+export function enqueueOutbox(m: {
+  recipient: string;
+  subject: string;
+  html: string;
+  text: string;
+}): number {
+  const info = db()
+    .prepare(
+      `INSERT INTO email_outbox (recipient, subject, html, body_text)
+       VALUES (@recipient, @subject, @html, @body_text)`,
+    )
+    .run({
+      recipient: m.recipient,
+      subject: m.subject,
+      html: m.html,
+      body_text: m.text,
+    });
+  return Number(info.lastInsertRowid);
+}
+
+/** Unsent rows still under the retry cap, oldest first (for the delivery sweep). */
+export function pendingOutbox(maxAttempts: number, limit: number): OutboxRow[] {
+  return db()
+    .prepare(
+      `SELECT id, recipient, subject, html, body_text, attempts FROM email_outbox
+       WHERE sent_at IS NULL AND attempts < ?
+       ORDER BY id ASC LIMIT ?`,
+    )
+    .all(maxAttempts, limit) as OutboxRow[];
+}
+
+export function markOutboxSent(id: number): void {
+  db()
+    .prepare(`UPDATE email_outbox SET sent_at = CURRENT_TIMESTAMP WHERE id = ?`)
+    .run(id);
+}
+
+export function markOutboxFailed(id: number, error: string): void {
+  db()
+    .prepare(
+      `UPDATE email_outbox SET attempts = attempts + 1, last_error = ? WHERE id = ?`,
+    )
+    .run(error.slice(0, 500), id);
 }

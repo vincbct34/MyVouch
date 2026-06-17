@@ -26,7 +26,16 @@ const {
   confirmUserEmail,
   canResendUserConfirm,
   appendAuditLog,
+  getAuditLog,
   getUserById,
+  encodeCursor,
+  decodeCursor,
+  getEndorsementByManageToken,
+  withdrawEndorsementByManageToken,
+  enqueueOutbox,
+  pendingOutbox,
+  markOutboxSent,
+  markOutboxFailed,
 } = dbmod;
 
 let owner: number;
@@ -154,8 +163,18 @@ test("pagination: limit/offset slices and counts/stats aggregate over all", () =
     moderateEndorsement(id, p, "approved");
   }
   assert.equal(countApprovedEndorsements(p), 25);
-  assert.equal(getApprovedEndorsements(p, { limit: 20, offset: 0 }).length, 20);
-  assert.equal(getApprovedEndorsements(p, { limit: 20, offset: 20 }).length, 5);
+
+  // Keyset pagination: first page, then cursor onto the next.
+  const page1 = getApprovedEndorsements(p, { limit: 20 });
+  assert.equal(page1.length, 20);
+  const cursor = decodeCursor(encodeCursor(page1[page1.length - 1]));
+  const page2 = getApprovedEndorsements(p, { limit: 20, cursor });
+  assert.equal(page2.length, 5);
+  // Pages are disjoint and ordered (no overlap across the cursor boundary).
+  const ids1 = new Set(page1.map((e) => e.id));
+  assert.ok(page2.every((e) => !ids1.has(e.id)));
+  // A malformed cursor decodes to null (falls back to the first page).
+  assert.equal(decodeCursor("not-a-cursor"), null);
 
   const stats = getApprovedStats(p);
   assert.equal(stats.total, 25);
@@ -199,4 +218,87 @@ test("appendAuditLog writes a row", () => {
 test("getEndorsementsForOwner returns all statuses, capped by limit", () => {
   const cnt = getEndorsementsForOwner(owner, { limit: 500 }).length;
   assert.ok(cnt >= 1);
+});
+
+test("manage_token: reviewer can look up and withdraw their own endorsement", () => {
+  const id = createEndorsement({
+    user_id: owner,
+    reviewer_name: "Withdrawer",
+    reviewer_email: "withdraw@corp.com",
+    relationship: "peer",
+    rating: 5,
+    body: "An endorsement the reviewer will later withdraw entirely.",
+    manage_token: "mtok-123",
+  });
+  assert.ok(id > 0);
+  const view = getEndorsementByManageToken("mtok-123");
+  assert.equal(view?.reviewer_name, "Withdrawer");
+  assert.equal(view?.owner_slug, "owner");
+  // Withdrawal deletes the row; idempotent on a second call.
+  assert.equal(withdrawEndorsementByManageToken("mtok-123"), true);
+  assert.equal(withdrawEndorsementByManageToken("mtok-123"), false);
+  assert.equal(getEndorsementByManageToken("mtok-123"), undefined);
+  // Unknown token is a no-op, not an error.
+  assert.equal(withdrawEndorsementByManageToken("nope"), false);
+});
+
+test("getAuditLog returns owner's entries most-recent-first", () => {
+  appendAuditLog(other, "password.change", null);
+  appendAuditLog(other, "session.logout_all", null);
+  const log = getAuditLog(other, 10);
+  assert.ok(log.length >= 2);
+  assert.equal(log[0].action, "session.logout_all"); // newest first
+});
+
+test("outbox: enqueue, mark sent/failed, and the pending sweep predicate", () => {
+  const a = enqueueOutbox({
+    recipient: "a@corp.com",
+    subject: "S",
+    html: "<p>h</p>",
+    text: "t",
+  });
+  const b = enqueueOutbox({
+    recipient: "b@corp.com",
+    subject: "S",
+    html: "<p>h</p>",
+    text: "t",
+  });
+  const idsBefore = pendingOutbox(6, 50).map((r) => r.id);
+  assert.ok(idsBefore.includes(a) && idsBefore.includes(b));
+
+  // Sent rows drop out of the pending set.
+  markOutboxSent(a);
+  assert.ok(!pendingOutbox(6, 50).some((r) => r.id === a));
+
+  // Failed rows stay pending until they exceed the attempt cap.
+  markOutboxFailed(b, "smtp down");
+  assert.ok(pendingOutbox(6, 50).some((r) => r.id === b));
+  assert.ok(!pendingOutbox(1, 50).some((r) => r.id === b)); // attempts(1) >= cap(1)
+});
+
+test("foreign_keys ON: deleting a user cascades to their endorsements", () => {
+  const tmp = createUser({
+    name: "Doomed",
+    email: "doomed@corp.com",
+    password_hash: "x:y",
+    slug: "doomed",
+  });
+  createEndorsement({
+    user_id: tmp,
+    reviewer_name: "R",
+    reviewer_email: "casc@corp.com",
+    relationship: "peer",
+    rating: 5,
+    body: "This endorsement should be cascade-deleted with its owner.",
+  });
+  appendAuditLog(tmp, "test.action", null);
+  db().prepare(`DELETE FROM users WHERE id = ?`).run(tmp);
+  const left = db()
+    .prepare(`SELECT COUNT(*) AS c FROM endorsements WHERE user_id = ?`)
+    .get(tmp) as { c: number };
+  const audit = db()
+    .prepare(`SELECT COUNT(*) AS c FROM audit_log WHERE user_id = ?`)
+    .get(tmp) as { c: number };
+  assert.equal(left.c, 0);
+  assert.equal(audit.c, 0);
 });

@@ -22,3 +22,21 @@ export function isSameOrigin(req: Request): boolean {
     return false;
   }
 }
+
+/** Minimum time a human plausibly takes to fill the endorsement form (ms). */
+export const MIN_SUBMIT_MS = 3000;
+
+/**
+ * Heuristic bot detection for the public submission form, kept pure so it's unit
+ * testable apart from the route. A filled honeypot field (hidden from humans) or
+ * an implausibly fast submit is almost certainly automated. Callers respond
+ * 200-OK without persisting so bots get no signal to tune against.
+ */
+export function isLikelyBot(input: {
+  honeypot?: unknown;
+  elapsedMs?: unknown;
+}): boolean {
+  if (String(input.honeypot ?? "").trim()) return true;
+  const elapsed = Number(input.elapsedMs);
+  return Number.isFinite(elapsed) && elapsed < MIN_SUBMIT_MS;
+}

@@ -6,6 +6,8 @@ import {
   getApprovedEndorsements,
   getApprovedStats,
   toPublicEndorsement,
+  encodeCursor,
+  PAGE_SIZE,
 } from "@/lib/db";
 import { appBaseUrl } from "@/lib/url";
 import { getCurrentUser } from "@/lib/session";
@@ -59,7 +61,13 @@ export default async function ProfilePage({
 
   const viewer = await getCurrentUser();
   // First page for the wall; aggregate stats computed over ALL approved rows.
-  const firstPage = getApprovedEndorsements(owner.id).map(toPublicEndorsement);
+  const firstRows = getApprovedEndorsements(owner.id);
+  const firstPage = firstRows.map(toPublicEndorsement);
+  // Keyset cursor handed to the client only when a full page came back.
+  const initialCursor =
+    firstRows.length === PAGE_SIZE
+      ? encodeCursor(firstRows[firstRows.length - 1])
+      : null;
   const stats = getApprovedStats(owner.id);
 
   const total = stats.total;
@@ -85,11 +93,6 @@ export default async function ProfilePage({
                 </div>
               )}
               <div className="badges">
-                {owner.identity_verified ? (
-                  <span className="badge badge-verified">
-                    <span className="dot" /> Identity verified
-                  </span>
-                ) : null}
                 {verifiedCount > 0 ? (
                   <span className="badge badge-brand">
                     <span className="dot" /> {verifiedCount} email-verified
@@ -146,7 +149,12 @@ export default async function ProfilePage({
             </Link>
           </div>
         ) : (
-          <ProfileWall slug={owner.slug} initial={firstPage} total={total} />
+          <ProfileWall
+            slug={owner.slug}
+            initial={firstPage}
+            initialCursor={initialCursor}
+            total={total}
+          />
         )}
 
         <div className="cta-band">

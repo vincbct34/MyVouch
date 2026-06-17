@@ -20,8 +20,8 @@ let owner = db.prepare("SELECT * FROM users WHERE email = ?").get(email);
 if (!owner) {
   const info = db
     .prepare(
-      `INSERT INTO users (name,email,password_hash,slug,headline,location,identity_verified,open_to_work,email_confirmed)
-       VALUES (?,?,?,?,?,?,1,1,1)`,
+      `INSERT INTO users (name,email,password_hash,slug,headline,location,open_to_work,email_confirmed)
+       VALUES (?,?,?,?,?,?,1,1)`,
     )
     .run(
       "Maya Okonkwo",

@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS users (
   headline TEXT,
   location TEXT,
   linkedin_url TEXT,
-  identity_verified INTEGER NOT NULL DEFAULT 0,
   open_to_work INTEGER NOT NULL DEFAULT 0,
   -- Owner's OWN email, confirmed via /confirm-email/[token]. The employer-overlap
   -- signal on incoming endorsements is only credited when this is 1, so an
@@ -41,13 +40,23 @@ CREATE TABLE IF NOT EXISTS endorsements (
   linkedin_matched INTEGER NOT NULL DEFAULT 0,
   confirm_token TEXT,
   confirm_sent_at DATETIME,
+  -- Stable per-endorsement token (never cleared) backing the reviewer's
+  -- self-service /manage/[token] page, where they can withdraw what they wrote.
+  manage_token TEXT,
   submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   resolved_at DATETIME
 );
 
 CREATE INDEX IF NOT EXISTS idx_end_user ON endorsements(user_id);
-CREATE INDEX IF NOT EXISTS idx_end_status ON endorsements(status);
 CREATE INDEX IF NOT EXISTS idx_end_confirm ON endorsements(confirm_token);
+CREATE INDEX IF NOT EXISTS idx_end_manage ON endorsements(manage_token);
+-- The public wall's hot query: approved rows for one owner, newest first.
+-- Composite (user_id, status, resolved_at, id) lets SQLite satisfy the filter
+-- AND the ORDER BY / keyset cursor from the index alone. Supersedes the old
+-- single-column idx_end_status (dropped below), which couldn't serve the sort.
+DROP INDEX IF EXISTS idx_end_status;
+CREATE INDEX IF NOT EXISTS idx_end_wall
+  ON endorsements(user_id, status, resolved_at DESC, id DESC);
 -- One pending endorsement per (profile, reviewer email): blocks queue flooding (#8).
 CREATE UNIQUE INDEX IF NOT EXISTS idx_end_pending_dedup
   ON endorsements(user_id, reviewer_email)
@@ -64,3 +73,21 @@ CREATE TABLE IF NOT EXISTS audit_log (
 );
 CREATE INDEX IF NOT EXISTS idx_audit_user ON audit_log(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_email_confirm ON users(email_confirm_token);
+
+-- Durable email outbox. Confirmation/resend mails are enqueued here first, then
+-- sent best-effort out of the request path; a periodic sweep retries rows that
+-- failed or were never picked up, so a provider blip never silently loses a
+-- verification link. attempts caps retries; sent_at NULL = still pending.
+CREATE TABLE IF NOT EXISTS email_outbox (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  recipient TEXT NOT NULL,
+  subject TEXT NOT NULL,
+  html TEXT NOT NULL,
+  body_text TEXT NOT NULL,
+  attempts INTEGER NOT NULL DEFAULT 0,
+  last_error TEXT,
+  sent_at DATETIME,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+-- Sweep predicate: unsent rows under the retry cap, oldest first.
+CREATE INDEX IF NOT EXISTS idx_outbox_pending ON email_outbox(sent_at, attempts);

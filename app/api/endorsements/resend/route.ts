@@ -3,7 +3,7 @@ import crypto from "node:crypto";
 import { getUserBySlug, rotateEndorsementConfirmToken } from "@/lib/db";
 import { rateLimitAll, clientIp } from "@/lib/ratelimit";
 import { isSameOrigin } from "@/lib/http";
-import { sendMail } from "@/lib/email";
+import { enqueueMail } from "@/lib/outbox";
 import { appBaseUrl } from "@/lib/url";
 
 function escapeHtml(s: string): string {
@@ -68,13 +68,11 @@ export async function POST(req: Request) {
     );
     if (rotated) {
       const link = `${appBaseUrl(req)}/confirm/${rotated}`;
-      void sendMail({
+      enqueueMail({
         to: reviewer_email,
         subject: `Confirm your endorsement of ${owner.name}`,
         text: `Here's a fresh link to confirm your endorsement of ${owner.name}:\n\n${link}\n`,
         html: `<p>Here's a fresh link to confirm your endorsement of <strong>${escapeHtml(owner.name)}</strong>:</p><p><a href="${link}">Confirm my endorsement</a></p>`,
-      }).catch((err) => {
-        console.error("Confirmation resend failed to send:", err);
       });
     }
   }

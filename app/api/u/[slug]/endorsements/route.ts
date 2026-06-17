@@ -6,13 +6,15 @@ import {
   getApprovedEndorsements,
   countApprovedEndorsements,
   toPublicEndorsement,
+  decodeCursor,
+  encodeCursor,
   PAGE_SIZE,
   type Relationship,
 } from "@/lib/db";
 import { rateLimitAll, clientIp } from "@/lib/ratelimit";
-import { isSameOrigin } from "@/lib/http";
+import { isSameOrigin, isLikelyBot } from "@/lib/http";
 import { employerOverlap } from "@/lib/verify";
-import { sendMail } from "@/lib/email";
+import { enqueueMail } from "@/lib/outbox";
 import { appBaseUrl } from "@/lib/url";
 import { SKILL_OPTIONS } from "@/lib/ui";
 
@@ -55,17 +57,16 @@ export async function GET(
     return NextResponse.json({ error: "Profile not found." }, { status: 404 });
 
   const url = new URL(req.url);
-  const offset = Math.max(
-    0,
-    Math.floor(Number(url.searchParams.get("offset")) || 0),
-  );
-  const endorsements = getApprovedEndorsements(owner.id, {
-    limit: PAGE_SIZE,
-    offset,
-  }).map(toPublicEndorsement);
+  const cursor = decodeCursor(url.searchParams.get("cursor"));
+  const rows = getApprovedEndorsements(owner.id, { limit: PAGE_SIZE, cursor });
+  // Keyset cursor for the *next* page: the last row of this one. Null when the
+  // page came back short, signalling the client there's nothing more to load.
+  const nextCursor =
+    rows.length === PAGE_SIZE ? encodeCursor(rows[rows.length - 1]) : null;
 
   return NextResponse.json({
-    endorsements,
+    endorsements: rows.map(toPublicEndorsement),
+    nextCursor,
     total: countApprovedEndorsements(owner.id),
   });
 }
@@ -86,12 +87,9 @@ export async function POST(
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  // Bot defense (honeypot + timing). A filled honeypot or an implausibly fast
-  // submit is almost certainly a bot. Respond 200-ok so bots get no signal to
+  // Bot defense (honeypot + timing). Respond 200-ok so bots get no signal to
   // tune against, but never persist. Checked before any expensive work.
-  const honeypot = String(b.company_url ?? "").trim();
-  const elapsedMs = Number(b.elapsed_ms);
-  if (honeypot || (Number.isFinite(elapsedMs) && elapsedMs < 3000)) {
+  if (isLikelyBot({ honeypot: b.company_url, elapsedMs: b.elapsed_ms })) {
     return NextResponse.json({ ok: true });
   }
 
@@ -170,6 +168,10 @@ export async function POST(
 
   // Earned verification signals.
   const confirm_token = crypto.randomBytes(32).toString("hex");
+  // Stable secret backing the reviewer's /manage/[token] withdraw page. Never
+  // rotated or cleared (unlike confirm_token), so the link in the email keeps
+  // working after confirmation if the reviewer later changes their mind.
+  const manage_token = crypto.randomBytes(32).toString("hex");
   const overlap = employerOverlap(reviewer_email, owner);
 
   try {
@@ -188,6 +190,7 @@ export async function POST(
       employer_overlap_verified: overlap,
       linkedin_matched: false,
       confirm_token,
+      manage_token,
     });
   } catch (err) {
     if (isConstraintError(err)) {
@@ -207,14 +210,14 @@ export async function POST(
   // (and a delivery failure never loses the submission — the owner still sees it
   // as unconfirmed). Fire-and-forget with logging; an outbox/retry is the next
   // step if delivery guarantees become important.
-  const link = `${appBaseUrl(req)}/confirm/${confirm_token}`;
-  void sendMail({
+  const base = appBaseUrl(req);
+  const link = `${base}/confirm/${confirm_token}`;
+  const manageLink = `${base}/manage/${manage_token}`;
+  enqueueMail({
     to: reviewer_email,
     subject: `Confirm your endorsement of ${owner.name}`,
-    text: `Thanks for vouching for ${owner.name}. Confirm your work email to verify your endorsement:\n\n${link}\n\nIf you didn't write this, you can ignore this email.`,
-    html: `<p>Thanks for vouching for <strong>${escapeHtml(owner.name)}</strong>.</p><p>Confirm your work email to verify your endorsement:</p><p><a href="${link}">Confirm my endorsement</a></p><p style="color:#666">If you didn't write this, you can ignore this email.</p>`,
-  }).catch((err) => {
-    console.error("Confirmation email failed to send:", err);
+    text: `Thanks for vouching for ${owner.name}. Confirm your work email to verify your endorsement:\n\n${link}\n\nChanged your mind or didn't write this? Withdraw it here:\n${manageLink}`,
+    html: `<p>Thanks for vouching for <strong>${escapeHtml(owner.name)}</strong>.</p><p>Confirm your work email to verify your endorsement:</p><p><a href="${link}">Confirm my endorsement</a></p><p style="color:#666">Changed your mind or didn't write this? <a href="${manageLink}">Withdraw it here</a>.</p>`,
   });
 
   return NextResponse.json({ ok: true });

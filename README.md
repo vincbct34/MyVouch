@@ -106,10 +106,11 @@ verified signal — nothing is labelled "verified" by default.
 - **`TRUST_PROXY` defaults to `false`**. Set it to `true` only behind a trusted
   proxy or platform that strips client-supplied forwarding headers before adding
   `x-forwarded-for` / `x-real-ip`.
-- **Email** is required for the confirmation flow. Set either `RESEND_API_KEY`
-  or the `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` group, plus
-  `EMAIL_FROM`. In production the app throws on boot if neither is configured;
-  in development, unconfigured email logs the confirmation link to the console.
+- **Email** is required for the confirmation flow. Set `RESEND_API_KEY` (and
+  `EMAIL_FROM` on a Resend-verified domain). In production the app throws on boot
+  if it's unset; in development, unconfigured email logs the confirmation link to
+  the console. Sends go through a durable outbox (`email_outbox`) that retries on
+  failure, so a provider blip never drops a link.
 - **Rate limiting**: public submit, login, and signup endpoints are throttled on
   both an identity key and the client IP (in-memory). For multi-instance deploys,
   back `lib/ratelimit.ts` with a shared store (e.g. Redis).
