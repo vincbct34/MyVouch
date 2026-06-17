@@ -82,6 +82,7 @@ body {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  overflow-x: hidden;
 }
 img,
 svg {
@@ -1402,6 +1403,24 @@ p {
   width: 16px;
   height: 16px;
   color: oklch(0.62 0.012 256);
+}
+@media (max-width: 760px) {
+  .tabbar .bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding-block: 10px;
+  }
+  .tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .admin-search {
+    width: 100%;
+  }
+  .admin-search input {
+    width: 100%;
+  }
 }
 
 .queue {
