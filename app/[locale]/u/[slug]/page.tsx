@@ -9,7 +9,7 @@ import {
   encodeCursor,
   PAGE_SIZE,
 } from "@/lib/db";
-import { appBaseUrl } from "@/lib/url";
+import { appBaseUrl, localeAlternates } from "@/lib/url";
 import { getCurrentUser } from "@/lib/session";
 import { getLocale } from "@/lib/locale";
 import { getMessages } from "@/lib/i18n";
@@ -26,23 +26,25 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const owner = getUserBySlug(slug);
-  const m = getMessages(await getLocale()).profile;
-  if (!owner) return { title: m.metaNotFound };
+  const locale = await getLocale();
+  const m = getMessages(locale).profile;
+  if (!owner) return { title: m.metaNotFound, robots: { index: false } };
 
   const title = m.metaTitle(owner.name);
   const description = owner.headline ?? m.metaDesc(owner.name);
-  const url = `${appBaseUrl()}/u/${owner.slug}`;
+  const alternates = localeAlternates(`/u/${owner.slug}`, locale);
   // Sharing the link (LinkedIn/X) is the core flow — give it a rich unfurl.
   return {
     title,
     description,
-    alternates: { canonical: url },
+    alternates,
     openGraph: {
       type: "profile",
       title,
       description,
-      url,
+      url: alternates.canonical,
       siteName: "MyVouch",
+      locale: locale === "fr" ? "fr_FR" : "en_US",
     },
     twitter: {
       card: "summary_large_image",
@@ -62,7 +64,8 @@ export default async function ProfilePage({
   if (!owner) notFound();
 
   const viewer = await getCurrentUser();
-  const m = getMessages(await getLocale()).profile;
+  const locale = await getLocale();
+  const m = getMessages(locale).profile;
   // First page for the wall; aggregate stats computed over ALL approved rows.
   const firstRows = getApprovedEndorsements(owner.id);
   const firstPage = firstRows.map(toPublicEndorsement);
@@ -79,8 +82,37 @@ export default async function ProfilePage({
   const avg = stats.avgRating !== null ? stats.avgRating.toFixed(1) : "—";
   const wouldRehire = stats.recommendPct;
 
+  // Person + AggregateRating structured data so search engines can show review
+  // rich results. AggregateRating is included only when there's a real rating to
+  // report — empty/zero ratings are dropped rather than faked.
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: owner.name,
+    url: `${appBaseUrl()}/${locale}/u/${owner.slug}`,
+    ...(owner.headline ? { jobTitle: owner.headline } : {}),
+    ...(owner.location
+      ? { homeLocation: { "@type": "Place", name: owner.location } }
+      : {}),
+    ...(total > 0 && stats.avgRating !== null
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: stats.avgRating.toFixed(1),
+            reviewCount: total,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }
+      : {}),
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <TopNav user={viewer} />
 
       <section className="profile-hero">

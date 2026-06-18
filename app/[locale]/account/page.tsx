@@ -15,7 +15,10 @@ import { AuditLog } from "@/components/AuditLog";
 import { DangerZone } from "@/components/DangerZone";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return { title: getMessages(await getLocale()).account.metaTitle };
+  return {
+    title: getMessages(await getLocale()).account.metaTitle,
+    robots: { index: false, follow: false },
+  };
 }
 
 export default async function AccountPage() {

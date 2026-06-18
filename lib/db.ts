@@ -282,6 +282,23 @@ export function slugExists(slug: string): boolean {
   return !!db().prepare("SELECT 1 FROM users WHERE slug = ?").get(slug);
 }
 
+/** All public profile walls, for the sitemap. `last` is the most recent of the
+ * owner's profile creation or their newest approved endorsement, so the sitemap
+ * `lastmod` reflects real wall activity. */
+export function listProfileSlugs(): { slug: string; last: string }[] {
+  return db()
+    .prepare(
+      `SELECT u.slug AS slug,
+              COALESCE(MAX(e.resolved_at), u.created_at) AS last
+         FROM users u
+         LEFT JOIN endorsements e
+           ON e.user_id = u.id AND e.status = 'approved'
+        GROUP BY u.id
+        ORDER BY u.id`,
+    )
+    .all() as { slug: string; last: string }[];
+}
+
 /** Update an owner's editable profile fields. Returns true if a row changed. */
 export function updateProfile(
   userId: number,

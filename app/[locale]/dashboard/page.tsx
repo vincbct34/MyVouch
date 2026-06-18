@@ -11,7 +11,10 @@ import { CopyLink, EmailVerifyBanner } from "@/components/DashboardChrome";
 import { QrShare } from "@/components/QrShare";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return { title: getMessages(await getLocale()).dashboard.metaTitle };
+  return {
+    title: getMessages(await getLocale()).dashboard.metaTitle,
+    robots: { index: false, follow: false },
+  };
 }
 
 export default async function DashboardPage() {

@@ -5,7 +5,10 @@ import { getLocale } from "@/lib/locale";
 import { getMessages } from "@/lib/i18n";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return { title: getMessages(await getLocale()).confirmEmailMeta };
+  return {
+    title: getMessages(await getLocale()).confirmEmailMeta,
+    robots: { index: false, follow: false },
+  };
 }
 
 export default async function ConfirmEmailPage({

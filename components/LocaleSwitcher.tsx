@@ -1,22 +1,29 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { LOCALES, LOCALE_COOKIE, messages } from "@/lib/i18n";
+import { useRouter, usePathname } from "next/navigation";
+import { LOCALES, isLocale, messages } from "@/lib/i18n";
 import { useLocale } from "./I18nProvider";
 
 /**
- * Language toggle. Writes a year-long `locale` cookie (readable server-side, so
- * SSR picks it up) and refreshes so server components re-render in the new
- * locale. Not httpOnly by design — the client needs to set it.
+ * Language toggle. Locale lives in the URL's first segment (/en/…, /fr/…), so
+ * switching swaps that prefix and navigates; middleware then pins the matching
+ * `locale` cookie. router.refresh() re-renders server components in the new
+ * locale.
  */
 export function LocaleSwitcher() {
   const router = useRouter();
+  const pathname = usePathname();
   const active = useLocale();
 
   function choose(next: string) {
-    // Standard cookie write; the immutability rule misreads document.cookie.
-    // eslint-disable-next-line react-hooks/immutability
-    document.cookie = `${LOCALE_COOKIE}=${next};path=/;max-age=31536000;samesite=lax`;
+    const segments = pathname.split("/");
+    // segments[0] is "" (leading slash); segments[1] is the locale prefix.
+    if (isLocale(segments[1])) {
+      segments[1] = next;
+    } else {
+      segments.splice(1, 0, next);
+    }
+    router.push(segments.join("/") || `/${next}`);
     router.refresh();
   }
 

@@ -40,15 +40,27 @@ First-time setup: `cp .env.example .env` and set `SESSION_SECRET` + `BASE_URL`.
 server and client and stays unit-testable. `Messages = typeof messages.en`
 makes the type checker enforce that **every locale defines the same keys** — a
 missing translation fails `typecheck`/`build`, not at runtime. The request-bound
-side is `lib/locale.ts` (`getLocale`, reads the `locale` cookie via
+side is `lib/locale.ts` (`getLocale`, reads the `x-locale` request header via
 `next/headers`); for API routes use `apiMessages(req)` (`lib/apimsg.ts`), which
 reads the cookie off the request. **Never pass the resolved catalog to a client
 component as a prop** — it contains functions (interpolation helpers) that
 aren't RSC-serializable. Instead `components/I18nProvider.tsx` carries only the
 `Locale` string in context; client components call `useT()` (indexes `messages`
 themselves). Server components call `getLocale()` then `getMessages(locale)`.
-Locale is cookie-driven (no `[locale]` route segment); `LocaleSwitcher` writes
-the cookie and `router.refresh()`es. Storage stays locale-independent:
+
+**Locale lives in the URL via the `[locale]` route segment** (`/en/…`, `/fr/…`)
+— every page route is under `app/[locale]/` (API routes, `robots.ts`,
+`sitemap.ts` stay at `app/` root, unprefixed). `middleware.ts` is the seam: it
+redirects unprefixed paths to the best locale (cookie → `Accept-Language` →
+`DEFAULT_LOCALE`), and for prefixed requests forwards the locale on the
+`x-locale` header (which `getLocale()` reads, so page components stay
+params-free) while pinning the `locale` cookie so later unprefixed links resolve
+in-locale. The root layout (`app/[locale]/layout.tsx`) reads `params.locale` for
+`<html lang>` and `notFound()`s on an invalid segment. `LocaleSwitcher` swaps the
+URL's first segment and navigates (no longer a bare cookie write). SEO depends on
+this: `localeAlternates` (lib/url.ts) emits per-locale canonical + hreflang, and
+`sitemap.ts` lists each path once per locale with hreflang alternates — so each
+language indexes as a distinct URL. Storage stays locale-independent:
 `SKILL_OPTIONS` (lib/ui.ts) are canonical English keys persisted/validated, with
 display labels in `messages[*].skillLabels`; relationship `value`s are likewise
 keys, labels live in the catalog.

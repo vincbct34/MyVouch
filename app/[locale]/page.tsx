@@ -1,9 +1,15 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { getCurrentUser } from "@/lib/session";
 import { getLocale } from "@/lib/locale";
 import { getMessages } from "@/lib/i18n";
+import { localeAlternates } from "@/lib/url";
 import { TopNav } from "@/components/TopNav";
 import { ShieldIcon, CheckIcon, LinkIcon } from "@/components/Icons";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return { alternates: localeAlternates("", await getLocale()) };
+}
 
 export default async function HomePage() {
   const user = await getCurrentUser();

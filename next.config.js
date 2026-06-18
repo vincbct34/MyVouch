@@ -36,11 +36,37 @@ if (isProd) {
   });
 }
 
+// Owner-only, auth, and credential-bearing token routes must never be indexed.
+// The token routes carry secrets in the URL — enforce noindex at the HTTP layer
+// (covers client-component pages that can't export metadata) in addition to
+// robots.ts. `:path*` matches zero-or-more segments, so each prefix covers the
+// bare path and its children.
+// Pages are locale-prefixed (/en, /fr); :locale captures that segment. The API
+// is not localized, so it keeps a bare prefix.
+const noindexSources = [
+  "/api/:path*",
+  "/:locale/dashboard/:path*",
+  "/:locale/account/:path*",
+  "/:locale/login",
+  "/:locale/signup",
+  "/:locale/confirm/:path*",
+  "/:locale/confirm-email/:path*",
+  "/:locale/manage/:path*",
+];
+
+const noindexHeader = { key: "X-Robots-Tag", value: "noindex, nofollow" };
+
 const nextConfig = {
   // better-sqlite3 is a native module — keep it external to the server bundle.
   serverExternalPackages: ["better-sqlite3"],
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      ...noindexSources.map((source) => ({
+        source,
+        headers: [noindexHeader],
+      })),
+    ];
   },
 };
 
