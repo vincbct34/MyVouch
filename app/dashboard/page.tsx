@@ -8,6 +8,7 @@ import { getMessages } from "@/lib/i18n";
 import { DashboardHeader } from "@/components/DashboardChrome";
 import { ModerationQueue } from "@/components/ModerationQueue";
 import { CopyLink, EmailVerifyBanner } from "@/components/DashboardChrome";
+import { QrShare } from "@/components/QrShare";
 
 export async function generateMetadata(): Promise<Metadata> {
   return { title: getMessages(await getLocale()).dashboard.metaTitle };
@@ -36,6 +37,7 @@ export default async function DashboardPage() {
 
       <div className="wrap share-row">
         <CopyLink url={vouchUrl} />
+        <QrShare url={vouchUrl} />
       </div>
 
       <ModerationQueue initial={endorsements} />

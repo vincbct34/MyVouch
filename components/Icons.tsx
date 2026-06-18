@@ -64,6 +64,15 @@ export const LinkIcon = ({ className }: P) => (
   </svg>
 );
 
+export const QrIcon = ({ className }: P) => (
+  <svg viewBox="0 0 24 24" className={className} {...base}>
+    <rect x="3" y="3" width="7" height="7" rx="1" />
+    <rect x="14" y="3" width="7" height="7" rx="1" />
+    <rect x="3" y="14" width="7" height="7" rx="1" />
+    <path d="M14 14h3v3M21 14v.01M21 21v-4M14 21h3" />
+  </svg>
+);
+
 export const StarIcon = ({ className }: P) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor">
     <path d="M12 2l2.9 6.3 6.9.7-5.1 4.6 1.4 6.8L12 17.6 5.9 21l1.4-6.8L2.2 9.6l6.9-.7z" />

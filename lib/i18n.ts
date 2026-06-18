@@ -63,7 +63,127 @@ const en = {
     f3Body:
       "Nothing goes public until you approve it. Moderate your queue, request edits, or decline — your wall, your call.",
   },
-  footer: { tagline: "Verified endorsements" },
+  footer: {
+    tagline: "Verified endorsements",
+    home: "Home",
+    login: "Log in",
+    signup: "Get your wall",
+    legalNotice: "Legal notice",
+    privacy: "Privacy",
+    terms: "Terms",
+    coffee: "Buy me a coffee",
+  },
+  legal: {
+    updated: "Last updated June 2026",
+    backHome: "Back to home",
+    legalNotice: {
+      title: "Legal notice",
+      sections: [
+        {
+          h: "Site publisher",
+          p: "This site is published by 404Factory, a French micro-enterprise registered under SIRET 987 983 939 00016, located at 20 Avenue de la Gare, 34770 Gigean, France. Director of publication: Vincent Bichat. Contact: factory404@outlook.fr.",
+        },
+        {
+          h: "Hosting",
+          p: "The site is hosted by Railway Corporation, 548 Market St Suite 68956, San Francisco, California 94104, United States.",
+        },
+        {
+          h: "Intellectual property",
+          p: "The MyVouch name, design, and interface are the exclusive property of the publisher. Endorsements and any content published by users remain the property of their respective authors.",
+        },
+        {
+          h: "Liability",
+          p: "The publisher strives to keep the information on this site accurate but offers no guarantee and accepts no liability for any errors or service interruptions. Each user is solely responsible for the endorsements moderated and published on their wall.",
+        },
+        {
+          h: "Personal data",
+          p: "The processing of personal data is described in our Privacy policy. This notice is provided pursuant to the French Trust in the Digital Economy Act (LCEN) of 21 June 2004.",
+        },
+      ],
+    },
+    privacy: {
+      title: "Privacy policy",
+      sections: [
+        {
+          h: "Data controller",
+          p: "The data controller is 404Factory (micro-enterprise), Gigean, France. Contact: factory404@outlook.fr.",
+        },
+        {
+          h: "Data collected",
+          p: "Account details (name, email address, and a password hashed with scrypt — never stored in clear text); the endorsements you receive together with their verification signals (confirmed email, employer-domain overlap, identity match); and limited technical data (authentication cookies and security logs).",
+        },
+        {
+          h: "Purposes",
+          p: "We process this data to provide the service, manage authentication, send transactional emails (confirmation links, reviewer notifications), and prevent abuse. The legal bases are performance of the contract and our legitimate interest in keeping the service secure.",
+        },
+        {
+          h: "Hosting and processors",
+          p: "Data is hosted by Railway Corporation. Transactional emails are sent through Resend. No data is shared for advertising purposes.",
+        },
+        {
+          h: "Retention",
+          p: "Data is kept for as long as your account is active. When you delete your account, your data (account, endorsements, and tokens) is permanently deleted.",
+        },
+        {
+          h: "Your rights",
+          p: "Under the GDPR you have rights of access, rectification, erasure, restriction, objection, and portability. You can manage most settings from your account or contact the controller to exercise your rights. You may also lodge a complaint with the French data-protection authority (CNIL).",
+        },
+        {
+          h: "Cookies",
+          p: "Only essential authentication cookies are used. There are no advertising or third-party tracking cookies.",
+        },
+        {
+          h: "Security",
+          p: "Passwords are hashed with scrypt; sessions rely on time-limited HMAC-signed tokens with per-account revocation. Access to data is restricted to the account that owns it.",
+        },
+      ],
+    },
+    terms: {
+      title: "Terms of use",
+      sections: [
+        {
+          h: "1. Purpose",
+          p: "MyVouch lets users collect, verify, and publish endorsements on a public wall they own.",
+        },
+        {
+          h: "2. Access",
+          p: "The service is free; some features require creating an account. Access may be suspended for maintenance without liability on the part of the publisher.",
+        },
+        {
+          h: "3. Accounts",
+          p: "You must provide accurate information and keep your login credentials safe. You can delete your account at any time from your account settings.",
+        },
+        {
+          h: "4. User obligations",
+          p: "You may not use the service for unlawful purposes, infringe the rights of third parties, or attempt to compromise its security. You are responsible for moderating the endorsements published on your wall.",
+        },
+        {
+          h: "5. Verification signals",
+          p: "Verification signals (confirmed email, employer-domain overlap, identity match) are indicative only. The publisher does not guarantee the real-world identity of the authors of endorsements.",
+        },
+        {
+          h: "6. Intellectual property",
+          p: "MyVouch owns the platform and its design; users and reviewers retain ownership of the content they create.",
+        },
+        {
+          h: "7. Liability",
+          p: "The service is provided “as is”, without any guarantee of error-free or uninterrupted operation.",
+        },
+        {
+          h: "8. Personal data",
+          p: "The handling of personal data is described in our Privacy policy.",
+        },
+        {
+          h: "9. Changes to the terms",
+          p: "These terms may be updated at any time; the version in force at the time of use applies.",
+        },
+        {
+          h: "10. Governing law",
+          p: "These terms are governed by French law. Any dispute falls under the jurisdiction of the courts of Montpellier.",
+        },
+      ],
+    },
+  },
   layout: {
     titleDefault: "MyVouch — Verified endorsements",
     description:
@@ -161,6 +281,11 @@ const en = {
     account: "Account",
     menu: "Menu",
     adminBadge: "Admin",
+    showQr: "Show QR code",
+    hideQr: "Hide QR code",
+    downloadQr: "Download PNG",
+    qrAlt: "QR code for your share link",
+    qrCaption: "Scan to open your share link",
   },
   wall: {
     filterAll: "All",
@@ -552,7 +677,127 @@ const fr: Messages = {
     f3Body:
       "Rien n’est publié tant que vous ne l’approuvez pas. Modérez votre file, demandez des modifications ou refusez — votre mur, votre décision.",
   },
-  footer: { tagline: "Recommandations vérifiées" },
+  footer: {
+    tagline: "Recommandations vérifiées",
+    home: "Accueil",
+    login: "Connexion",
+    signup: "Créer votre mur",
+    legalNotice: "Mentions légales",
+    privacy: "Confidentialité",
+    terms: "CGU",
+    coffee: "Offrez-moi un café",
+  },
+  legal: {
+    updated: "Dernière mise à jour : juin 2026",
+    backHome: "Retour à l’accueil",
+    legalNotice: {
+      title: "Mentions légales",
+      sections: [
+        {
+          h: "Éditeur du site",
+          p: "Ce site est édité par 404Factory, micro-entreprise immatriculée sous le SIRET 987 983 939 00016, sise 20 Avenue de la Gare, 34770 Gigean, France. Directeur de la publication : Vincent Bichat. Contact : factory404@outlook.fr.",
+        },
+        {
+          h: "Hébergement",
+          p: "Le site est hébergé par Railway Corporation, 548 Market St Suite 68956, San Francisco, California 94104, États-Unis.",
+        },
+        {
+          h: "Propriété intellectuelle",
+          p: "Le nom, le design et l’interface de MyVouch sont la propriété exclusive de l’éditeur. Les recommandations et tout contenu publié par les utilisateurs restent la propriété de leurs auteurs respectifs.",
+        },
+        {
+          h: "Responsabilité",
+          p: "L’éditeur s’efforce de maintenir les informations de ce site exactes mais n’offre aucune garantie et décline toute responsabilité en cas d’erreurs ou d’interruptions de service. Chaque utilisateur est seul responsable des recommandations modérées et publiées sur son mur.",
+        },
+        {
+          h: "Données personnelles",
+          p: "Le traitement des données personnelles est décrit dans notre Politique de confidentialité. Ces mentions sont fournies en application de la loi pour la confiance dans l’économie numérique (LCEN) du 21 juin 2004.",
+        },
+      ],
+    },
+    privacy: {
+      title: "Politique de confidentialité",
+      sections: [
+        {
+          h: "Responsable du traitement",
+          p: "Le responsable du traitement est 404Factory (micro-entreprise), Gigean, France. Contact : factory404@outlook.fr.",
+        },
+        {
+          h: "Données collectées",
+          p: "Données de compte (nom, adresse e-mail et mot de passe haché via scrypt — jamais stocké en clair) ; les recommandations que vous recevez ainsi que leurs signaux de vérification (e-mail confirmé, domaine employeur commun, identité correspondante) ; et des données techniques limitées (cookies d’authentification et journaux de sécurité).",
+        },
+        {
+          h: "Finalités",
+          p: "Nous traitons ces données pour fournir le service, gérer l’authentification, envoyer les e-mails transactionnels (liens de confirmation, notifications aux recommandeurs) et prévenir les abus. Les bases légales sont l’exécution du contrat et notre intérêt légitime à sécuriser le service.",
+        },
+        {
+          h: "Hébergement et sous-traitants",
+          p: "Les données sont hébergées par Railway Corporation. Les e-mails transactionnels sont envoyés via Resend. Aucune donnée n’est partagée à des fins publicitaires.",
+        },
+        {
+          h: "Conservation",
+          p: "Les données sont conservées tant que votre compte est actif. Lorsque vous supprimez votre compte, vos données (compte, recommandations et jetons) sont définitivement supprimées.",
+        },
+        {
+          h: "Vos droits",
+          p: "Conformément au RGPD, vous disposez des droits d’accès, de rectification, d’effacement, de limitation, d’opposition et de portabilité. Vous pouvez gérer la plupart des réglages depuis votre compte ou contacter le responsable pour exercer vos droits. Vous pouvez également introduire une réclamation auprès de la CNIL.",
+        },
+        {
+          h: "Cookies",
+          p: "Seuls des cookies d’authentification essentiels sont utilisés. Aucun cookie publicitaire ni traceur tiers n’est employé.",
+        },
+        {
+          h: "Sécurité",
+          p: "Les mots de passe sont hachés via scrypt ; les sessions reposent sur des jetons signés (HMAC) à durée limitée avec révocation par compte. L’accès aux données est limité au compte qui en est propriétaire.",
+        },
+      ],
+    },
+    terms: {
+      title: "Conditions générales d’utilisation",
+      sections: [
+        {
+          h: "1. Objet",
+          p: "MyVouch permet de collecter, vérifier et publier des recommandations sur un mur public dont l’utilisateur est propriétaire.",
+        },
+        {
+          h: "2. Accès",
+          p: "Le service est gratuit ; certaines fonctionnalités nécessitent la création d’un compte. L’accès peut être suspendu pour maintenance sans que la responsabilité de l’éditeur puisse être engagée.",
+        },
+        {
+          h: "3. Compte",
+          p: "Vous devez fournir des informations exactes et protéger vos identifiants de connexion. Vous pouvez supprimer votre compte à tout moment depuis les paramètres de votre compte.",
+        },
+        {
+          h: "4. Obligations de l’utilisateur",
+          p: "Vous ne pouvez pas utiliser le service à des fins illicites, porter atteinte aux droits de tiers ou tenter d’en compromettre la sécurité. Vous êtes responsable de la modération des recommandations publiées sur votre mur.",
+        },
+        {
+          h: "5. Signaux de vérification",
+          p: "Les signaux de vérification (e-mail confirmé, domaine employeur commun, identité correspondante) sont fournis à titre indicatif. L’éditeur ne garantit pas l’identité réelle des auteurs des recommandations.",
+        },
+        {
+          h: "6. Propriété intellectuelle",
+          p: "MyVouch détient la plateforme et son design ; les utilisateurs et les recommandeurs conservent la propriété des contenus qu’ils créent.",
+        },
+        {
+          h: "7. Responsabilité",
+          p: "Le service est fourni « en l’état », sans garantie de fonctionnement sans erreur ni continu.",
+        },
+        {
+          h: "8. Données personnelles",
+          p: "Le traitement des données personnelles est décrit dans notre Politique de confidentialité.",
+        },
+        {
+          h: "9. Modification des CGU",
+          p: "Ces conditions peuvent être mises à jour à tout moment ; la version en vigueur au moment de l’utilisation s’applique.",
+        },
+        {
+          h: "10. Droit applicable",
+          p: "Les présentes conditions sont régies par le droit français. Tout litige relève de la compétence des tribunaux de Montpellier.",
+        },
+      ],
+    },
+  },
   layout: {
     titleDefault: "MyVouch — Recommandations vérifiées",
     description:
@@ -652,6 +897,11 @@ const fr: Messages = {
     account: "Compte",
     menu: "Menu",
     adminBadge: "Admin",
+    showQr: "Afficher le QR code",
+    hideQr: "Masquer le QR code",
+    downloadQr: "Télécharger le PNG",
+    qrAlt: "QR code de votre lien de partage",
+    qrCaption: "Scannez pour ouvrir votre lien de partage",
   },
   wall: {
     filterAll: "Tous",

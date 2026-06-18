@@ -1849,19 +1849,139 @@ p {
 /* ---------- Page footer ---------- */
 .site-foot {
   border-top: 1px solid var(--line);
-  padding: 40px 0;
+  padding: 44px 0 36px;
   margin-top: auto;
 }
-.site-foot .row {
+.site-foot .foot-main {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 20px;
   flex-wrap: wrap;
 }
-.site-foot .cp {
+.site-foot .foot-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.site-foot .foot-tag {
   font-size: 13.5px;
   color: var(--ink-soft);
+}
+.site-foot .foot-coffee {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+  background: #ffdd00;
+  border: 1px solid oklch(0.86 0.16 95);
+  border-radius: var(--r-sm);
+  padding: 6px 12px;
+}
+.site-foot .foot-coffee:hover {
+  background: oklch(0.92 0.18 98);
+}
+.site-foot .foot-nav {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
+}
+.site-foot .foot-nav a {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-2);
+  text-decoration: none;
+}
+.site-foot .foot-nav a:hover {
+  color: var(--ink);
+}
+.site-foot .foot-legal {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 26px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+}
+.site-foot .foot-legal a {
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+.site-foot .foot-legal a:hover {
+  color: var(--ink-2);
+}
+.site-foot .cp {
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+/* ---------- Share QR ---------- */
+.qr-share {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.qr-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 18px;
+  max-width: 280px;
+}
+.qr-svg {
+  width: 220px;
+  height: 220px;
+  border-radius: var(--r-sm);
+}
+.qr-caption {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+/* ---------- Legal pages ---------- */
+.legal-main {
+  padding: 56px 0 72px;
+}
+.legal-doc {
+  max-width: 680px;
+}
+.legal-doc h1 {
+  margin: 0 0 8px;
+}
+.legal-doc h2 {
+  font-size: 17px;
+  margin: 32px 0 8px;
+}
+.legal-doc p {
+  color: var(--ink-2);
+  line-height: 1.7;
+}
+.legal-updated {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin: 0 0 24px;
+}
+.legal-back {
+  display: inline-block;
+  margin-top: 28px;
+  font-weight: 500;
+  color: var(--brand-deep);
+  text-decoration: none;
+}
+.legal-back:hover {
+  text-decoration: underline;
 }
 
 /* ---------- Verified chip (public wall) ---------- */
