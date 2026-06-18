@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getUserBySlug } from "@/lib/db";
+import { avatarUrl } from "@/lib/ui";
 import { getLocale } from "@/lib/locale";
 import { getMessages } from "@/lib/i18n";
 import { Brandmark } from "@/components/Brandmark";
@@ -44,7 +45,11 @@ export default async function VouchPage({
         <div className="submit-intro">
           <span className="for-pill">
             {m.forPill(owner.name)}
-            <Avatar name={owner.name} size="sm" />
+            <Avatar
+              name={owner.name}
+              size="sm"
+              src={avatarUrl(owner.slug, owner.avatar_updated_at)}
+            />
           </span>
           <h1>{m.title(owner.name.split(" ")[0])}</h1>
           <p className="copy">{m.copy(owner.name.split(" ")[0])}</p>

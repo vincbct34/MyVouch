@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Brandmark } from "./Brandmark";
 import { Avatar } from "./Avatar";
 import type { User } from "@/lib/db";
+import { avatarUrl } from "@/lib/ui";
 import { getLocale } from "@/lib/locale";
 import { getMessages } from "@/lib/i18n";
 
@@ -15,7 +16,11 @@ export async function TopNav({ user }: { user: User | null }) {
         <div className="center">
           {user ? (
             <Link href="/dashboard" aria-label={m.dashboardAria}>
-              <Avatar name={user.name} size="sm" />
+              <Avatar
+                name={user.name}
+                size="sm"
+                src={avatarUrl(user.slug, user.avatar_updated_at)}
+              />
             </Link>
           ) : (
             <>

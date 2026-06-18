@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/session";
 import { apiMessages } from "@/lib/apimsg";
-import { updateProfile } from "@/lib/db";
+import { updateProfile, updateName } from "@/lib/db";
 import { isSameOrigin } from "@/lib/http";
 
 /** Owner edits their own editable profile fields (#12). */
@@ -29,11 +29,22 @@ export async function PATCH(req: Request) {
     );
   }
 
+  const name = String(body.name ?? "").trim();
   const headline = String(body.headline ?? "").trim() || null;
   const location = String(body.location ?? "").trim() || null;
   const linkedin_url = String(body.linkedin_url ?? "").trim() || null;
   const open_to_work = body.open_to_work ? 1 : 0;
 
+  if (name.length < 2)
+    return NextResponse.json(
+      { error: apiMessages(req).api.enterName },
+      { status: 400 },
+    );
+  if (name.length > 120)
+    return NextResponse.json(
+      { error: apiMessages(req).api.nameLong },
+      { status: 400 },
+    );
   if (headline && headline.length > 160)
     return NextResponse.json(
       { error: apiMessages(req).api.headlineLong },
@@ -55,6 +66,7 @@ export async function PATCH(req: Request) {
       { status: 400 },
     );
 
+  updateName(user.id, name);
   updateProfile(user.id, { headline, location, linkedin_url, open_to_work });
   return NextResponse.json({ ok: true });
 }

@@ -19,7 +19,22 @@ CREATE TABLE IF NOT EXISTS users (
   email_confirm_token TEXT,
   email_confirm_sent_at DATETIME,
   session_epoch INTEGER NOT NULL DEFAULT 0,
+  -- Set whenever the owner uploads a profile photo, cleared on removal. NULL
+  -- means "no photo" (fall back to generated initials). The bytes live in the
+  -- separate user_avatars table so SELECT * on users never drags the BLOB into
+  -- the per-request session User object; this timestamp also cache-busts the
+  -- public /api/u/[slug]/avatar URL.
+  avatar_updated_at DATETIME,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Profile photos, one row per user, kept apart from the users table so the
+-- image bytes are only read when actually serving the avatar. ON DELETE CASCADE
+-- removes the photo with the account.
+CREATE TABLE IF NOT EXISTS user_avatars (
+  user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  bytes BLOB NOT NULL,
+  mime TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS endorsements (

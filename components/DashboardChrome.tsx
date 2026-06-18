@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Brandmark } from "./Brandmark";
 import { Avatar } from "./Avatar";
 import { LinkIcon } from "./Icons";
+import { avatarUrl } from "@/lib/ui";
 import { useT } from "./I18nProvider";
 
 export function CopyLink({ url }: { url: string }) {
@@ -106,9 +107,11 @@ export function DashboardHeader({
   user: {
     slug: string;
     name: string;
+    avatarUpdatedAt: string | null;
   };
 }) {
   const m = useT().chrome;
+  const src = avatarUrl(user.slug, user.avatarUpdatedAt);
   return (
     <header className="admin-head">
       <div className="wrap bar admin-shell">
@@ -121,8 +124,13 @@ export function DashboardHeader({
           <Link href={`/u/${user.slug}`} className="btn btn-ghost btn-sm">
             {m.viewPublic}
           </Link>
+          <Link href="/account" className="btn btn-ghost btn-sm">
+            {m.account}
+          </Link>
           <LogoutButton />
-          <Avatar name={user.name} size="sm" />
+          <Link href="/account" aria-label={m.account}>
+            <Avatar name={user.name} size="sm" src={src} />
+          </Link>
         </div>
 
         <details className="admin-menu">
@@ -134,9 +142,12 @@ export function DashboardHeader({
             <Link href={`/u/${user.slug}`} className="btn btn-ghost btn-sm">
               {m.viewPublic}
             </Link>
+            <Link href="/account" className="btn btn-ghost btn-sm">
+              {m.account}
+            </Link>
             <LogoutButton />
             <div className="admin-menu-user">
-              <Avatar name={user.name} size="sm" />
+              <Avatar name={user.name} size="sm" src={src} />
               <span>{user.name}</span>
             </div>
           </div>

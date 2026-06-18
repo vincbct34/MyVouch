@@ -38,6 +38,7 @@ export interface User {
   email_confirm_token: string | null;
   email_confirm_sent_at: string | null;
   session_epoch: number;
+  avatar_updated_at: string | null;
   created_at: string;
 }
 
@@ -127,6 +128,7 @@ const EXPECTED_COLUMNS: Record<string, Record<string, string>> = {
     email_confirm_token: "TEXT",
     email_confirm_sent_at: "DATETIME",
     session_epoch: "INTEGER NOT NULL DEFAULT 0",
+    avatar_updated_at: "DATETIME",
   },
   endorsements: {
     reviewer_linkedin: "TEXT",
@@ -304,6 +306,88 @@ export function updateProfile(
       linkedin_url: p.linkedin_url,
       open_to_work: p.open_to_work,
     });
+  return info.changes > 0;
+}
+
+/** Update an owner's display name. The slug is intentionally left untouched so
+ * already-shared /u/[slug] links keep working. Returns true if a row changed. */
+export function updateName(userId: number, name: string): boolean {
+  const info = db()
+    .prepare(`UPDATE users SET name = ? WHERE id = ?`)
+    .run(name, userId);
+  return info.changes > 0;
+}
+
+/**
+ * Change an owner's email. Resets email_confirmed and clears any pending confirm
+ * token so the new address must be re-verified before it can earn the
+ * employer-overlap signal again. The caller mints + mails a fresh token.
+ * Returns true if a row changed. Uniqueness is enforced by the UNIQUE index on
+ * users.email — callers should pre-check with getUserByEmail and surface a 409.
+ */
+export function updateEmail(userId: number, email: string): boolean {
+  const info = db()
+    .prepare(
+      `UPDATE users
+       SET email = ?, email_confirmed = 0,
+           email_confirm_token = NULL, email_confirm_sent_at = NULL
+       WHERE id = ?`,
+    )
+    .run(email, userId);
+  return info.changes > 0;
+}
+
+/* ---------------- Profile photo ---------------- */
+
+/** Store (or replace) an owner's profile photo and stamp avatar_updated_at. */
+export function setAvatar(userId: number, bytes: Buffer, mime: string): void {
+  const tx = db().transaction(() => {
+    db()
+      .prepare(
+        `INSERT INTO user_avatars (user_id, bytes, mime) VALUES (?, ?, ?)
+         ON CONFLICT(user_id) DO UPDATE SET bytes = excluded.bytes, mime = excluded.mime`,
+      )
+      .run(userId, bytes, mime);
+    db()
+      .prepare(
+        `UPDATE users SET avatar_updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+      )
+      .run(userId);
+  });
+  tx();
+}
+
+/** Remove an owner's profile photo, reverting to generated initials. */
+export function clearAvatar(userId: number): void {
+  const tx = db().transaction(() => {
+    db().prepare(`DELETE FROM user_avatars WHERE user_id = ?`).run(userId);
+    db()
+      .prepare(`UPDATE users SET avatar_updated_at = NULL WHERE id = ?`)
+      .run(userId);
+  });
+  tx();
+}
+
+/** Public read of an owner's profile photo by slug (for the avatar route). */
+export function getAvatarBytesBySlug(
+  slug: string,
+): { bytes: Buffer; mime: string } | undefined {
+  return db()
+    .prepare(
+      `SELECT a.bytes AS bytes, a.mime AS mime
+       FROM user_avatars a JOIN users u ON u.id = a.user_id
+       WHERE u.slug = ?`,
+    )
+    .get(slug) as { bytes: Buffer; mime: string } | undefined;
+}
+
+/**
+ * Permanently delete an account. The ON DELETE CASCADE foreign keys remove the
+ * user's endorsements, audit log, and avatar in the same statement (foreign_keys
+ * is ON per connection — see connect()). Returns true if a row was removed.
+ */
+export function deleteUser(userId: number): boolean {
+  const info = db().prepare(`DELETE FROM users WHERE id = ?`).run(userId);
   return info.changes > 0;
 }
 

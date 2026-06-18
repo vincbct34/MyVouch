@@ -28,6 +28,13 @@ const {
   appendAuditLog,
   getAuditLog,
   getUserById,
+  getUserBySlug,
+  updateName,
+  updateEmail,
+  setAvatar,
+  clearAvatar,
+  getAvatarBytesBySlug,
+  deleteUser,
   encodeCursor,
   decodeCursor,
   getEndorsementByManageToken,
@@ -274,6 +281,90 @@ test("outbox: enqueue, mark sent/failed, and the pending sweep predicate", () =>
   markOutboxFailed(b, "smtp down");
   assert.ok(pendingOutbox(6, 50).some((r) => r.id === b));
   assert.ok(!pendingOutbox(1, 50).some((r) => r.id === b)); // attempts(1) >= cap(1)
+});
+
+test("updateName changes name but leaves the slug (shared links) intact", () => {
+  const id = createUser({
+    name: "Renamer",
+    email: "rename@corp.com",
+    password_hash: "x:y",
+    slug: "renamer",
+  });
+  assert.equal(updateName(id, "Renamed Person"), true);
+  const u = getUserById(id)!;
+  assert.equal(u.name, "Renamed Person");
+  assert.equal(u.slug, "renamer"); // unchanged
+});
+
+test("updateEmail swaps the address and resets the confirmation state", () => {
+  const id = createUser({
+    name: "Emailer",
+    email: "before@corp.com",
+    password_hash: "x:y",
+    slug: "emailer",
+  });
+  // Mark confirmed, then change the email — confirmation must reset.
+  setEmailConfirmToken(id, "etok");
+  confirmUserEmail("etok");
+  assert.equal(getUserById(id)!.email_confirmed, 1);
+
+  assert.equal(updateEmail(id, "after@corp.com"), true);
+  const u = getUserById(id)!;
+  assert.equal(u.email, "after@corp.com");
+  assert.equal(u.email_confirmed, 0);
+  assert.equal(u.email_confirm_token, null);
+});
+
+test("avatar: set, read by slug, clear, and updated_at flag", () => {
+  const id = createUser({
+    name: "Pho To",
+    email: "photo@corp.com",
+    password_hash: "x:y",
+    slug: "photo",
+  });
+  assert.equal(getUserById(id)!.avatar_updated_at, null);
+  assert.equal(getAvatarBytesBySlug("photo"), undefined);
+
+  setAvatar(id, Buffer.from([1, 2, 3, 4]), "image/jpeg");
+  const got = getAvatarBytesBySlug("photo")!;
+  assert.equal(got.mime, "image/jpeg");
+  assert.ok(Buffer.from(got.bytes).equals(Buffer.from([1, 2, 3, 4])));
+  assert.ok(getUserById(id)!.avatar_updated_at !== null);
+
+  // Replace then clear.
+  setAvatar(id, Buffer.from([9]), "image/png");
+  assert.equal(getAvatarBytesBySlug("photo")!.mime, "image/png");
+  clearAvatar(id);
+  assert.equal(getAvatarBytesBySlug("photo"), undefined);
+  assert.equal(getUserById(id)!.avatar_updated_at, null);
+});
+
+test("deleteUser removes the account and cascades endorsements + avatar", () => {
+  const id = createUser({
+    name: "Goodbye",
+    email: "bye@corp.com",
+    password_hash: "x:y",
+    slug: "goodbye",
+  });
+  createEndorsement({
+    user_id: id,
+    reviewer_name: "R",
+    reviewer_email: "bye-rev@corp.com",
+    relationship: "peer",
+    rating: 5,
+    body: "An endorsement removed when the account is deleted entirely.",
+  });
+  setAvatar(id, Buffer.from([7]), "image/jpeg");
+
+  assert.equal(deleteUser(id), true);
+  assert.equal(getUserBySlug("goodbye"), undefined);
+  assert.equal(getAvatarBytesBySlug("goodbye"), undefined);
+  const left = db()
+    .prepare(`SELECT COUNT(*) AS c FROM endorsements WHERE user_id = ?`)
+    .get(id) as { c: number };
+  assert.equal(left.c, 0);
+  // Idempotent: deleting an absent user is a no-op, not an error.
+  assert.equal(deleteUser(id), false);
 });
 
 test("foreign_keys ON: deleting a user cascades to their endorsements", () => {

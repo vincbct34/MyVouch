@@ -1931,6 +1931,72 @@ p {
   margin: 4px 0;
 }
 
+/* ---------- Account page ---------- */
+.avatar-img {
+  object-fit: cover;
+}
+.account-main {
+  padding: 32px 0 64px;
+}
+.account-wrap {
+  display: grid;
+  gap: 22px;
+  max-width: 620px;
+}
+.account-head {
+  display: grid;
+  gap: 6px;
+}
+.account-head h1 {
+  margin: 0;
+}
+.account-head .btn {
+  justify-self: start;
+  margin-top: 6px;
+}
+.account-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 22px;
+  display: grid;
+  gap: 16px;
+}
+.account-card h2 {
+  margin: 0;
+  font-size: 17px;
+}
+.account-card .settings-form {
+  margin-top: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  max-width: none;
+}
+.account-current {
+  font-size: 14px;
+  color: var(--ink-2);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.avatar-controls {
+  display: grid;
+  gap: 8px;
+}
+.danger-zone {
+  border-color: var(--rose, #e5b4b6);
+}
+.danger-zone h2 {
+  color: var(--rose-deep, #b4232a);
+}
+
 /* Account activity (audit log) — read-only history in the dashboard. */
 .audit-log {
   background: var(--white);

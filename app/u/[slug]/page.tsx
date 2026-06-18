@@ -13,6 +13,7 @@ import { appBaseUrl } from "@/lib/url";
 import { getCurrentUser } from "@/lib/session";
 import { getLocale } from "@/lib/locale";
 import { getMessages } from "@/lib/i18n";
+import { avatarUrl } from "@/lib/ui";
 import { TopNav } from "@/components/TopNav";
 import { Footer } from "@/components/Footer";
 import { Avatar } from "@/components/Avatar";
@@ -86,7 +87,11 @@ export default async function ProfilePage({
       <section className="profile-hero">
         <div className="wrap grid">
           <div className="id-block">
-            <Avatar name={owner.name} size="xl" />
+            <Avatar
+              name={owner.name}
+              size="xl"
+              src={avatarUrl(owner.slug, owner.avatar_updated_at)}
+            />
             <div>
               <h1 className="name">{owner.name}</h1>
               {owner.headline && <div className="role">{owner.headline}</div>}

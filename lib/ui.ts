@@ -48,6 +48,19 @@ export function formatDate(iso: string, locale: Locale = "fr"): string {
   });
 }
 
+/**
+ * Public URL for an owner's profile photo, or null when they have none.
+ * Versioned by avatar_updated_at so the immutable cache is invalidated whenever
+ * the photo changes (see app/api/u/[slug]/avatar).
+ */
+export function avatarUrl(
+  slug: string,
+  updatedAt: string | null,
+): string | null {
+  if (!updatedAt) return null;
+  return `/api/u/${slug}/avatar?v=${encodeURIComponent(updatedAt)}`;
+}
+
 export function slugify(name: string): string {
   return name
     .toLowerCase()
