@@ -40,7 +40,7 @@ export function Brandmark({
   );
   if (!href) return inner;
   return (
-    <Link href={href} aria-label={`${label} home`}>
+    <Link href={href} aria-label={label}>
       {inner}
     </Link>
   );

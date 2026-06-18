@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useT } from "./I18nProvider";
 
 export function SecuritySettings() {
+  const m = useT().security;
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(
@@ -19,7 +21,7 @@ export function SecuritySettings() {
     const next = String(fd.get("new_password") ?? "");
     const confirm = String(fd.get("confirm_password") ?? "");
     if (next !== confirm) {
-      setMsg({ kind: "err", text: "New passwords don’t match." });
+      setMsg({ kind: "err", text: m.pwMismatch });
       return;
     }
     setBusy(true);
@@ -34,14 +36,11 @@ export function SecuritySettings() {
     const json = await res.json();
     setBusy(false);
     if (!res.ok) {
-      setMsg({ kind: "err", text: json.error ?? "Couldn’t change password." });
+      setMsg({ kind: "err", text: json.error ?? m.pwChangeFail });
       return;
     }
     form.reset();
-    setMsg({
-      kind: "ok",
-      text: "Password changed. Other devices have been signed out.",
-    });
+    setMsg({ kind: "ok", text: m.pwChanged });
   }
 
   async function logoutEverywhere() {
@@ -49,7 +48,7 @@ export function SecuritySettings() {
     const res = await fetch("/api/auth/logout-all", { method: "POST" });
     if (!res.ok) {
       setLoggingOut(false);
-      setMsg({ kind: "err", text: "Couldn’t sign out. Try again." });
+      setMsg({ kind: "err", text: m.logoutFail });
       return;
     }
     router.push("/login");
@@ -58,7 +57,7 @@ export function SecuritySettings() {
 
   return (
     <details className="profile-settings">
-      <summary className="btn btn-ghost btn-sm">Security</summary>
+      <summary className="btn btn-ghost btn-sm">{m.summary}</summary>
       <div className="settings-form">
         <form
           className="settings-form"
@@ -66,7 +65,7 @@ export function SecuritySettings() {
           onSubmit={changePassword}
         >
           <div className="field">
-            <label htmlFor="current_password">Current password</label>
+            <label htmlFor="current_password">{m.current}</label>
             <input
               className="input"
               id="current_password"
@@ -77,7 +76,7 @@ export function SecuritySettings() {
             />
           </div>
           <div className="field">
-            <label htmlFor="new_password">New password</label>
+            <label htmlFor="new_password">{m.new}</label>
             <input
               className="input"
               id="new_password"
@@ -89,7 +88,7 @@ export function SecuritySettings() {
             />
           </div>
           <div className="field">
-            <label htmlFor="confirm_password">Confirm new password</label>
+            <label htmlFor="confirm_password">{m.confirm}</label>
             <input
               className="input"
               id="confirm_password"
@@ -102,7 +101,7 @@ export function SecuritySettings() {
           </div>
           <div className="settings-actions">
             <button className="btn btn-primary btn-sm" disabled={busy}>
-              {busy ? "Saving…" : "Change password"}
+              {busy ? m.saving : m.save}
             </button>
             {msg && (
               <span
@@ -129,11 +128,9 @@ export function SecuritySettings() {
             onClick={logoutEverywhere}
             disabled={loggingOut}
           >
-            {loggingOut ? "Signing out…" : "Log out everywhere"}
+            {loggingOut ? m.loggingOut : m.logoutAll}
           </button>
-          <span className="settings-msg">
-            Signs out this and all other devices.
-          </span>
+          <span className="settings-msg">{m.logoutAllHint}</span>
         </div>
       </div>
     </details>

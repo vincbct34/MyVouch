@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useT } from "./I18nProvider";
 
 type State =
   | { kind: "idle" }
@@ -11,6 +12,7 @@ type State =
 
 /** Owner-side confirmation of their own email (posts to /api/auth/email/confirm). */
 export function EmailConfirmAction({ token }: { token: string }) {
+  const m = useT().emailConfirm;
   const [state, setState] = useState<State>({ kind: "idle" });
 
   async function confirm() {
@@ -23,28 +25,22 @@ export function EmailConfirmAction({ token }: { token: string }) {
       });
       const json = await res.json();
       if (!res.ok) {
-        setState({
-          kind: "error",
-          message: json.error ?? "Something went wrong.",
-        });
+        setState({ kind: "error", message: json.error ?? m.generic });
         return;
       }
       setState({ kind: "done" });
     } catch {
-      setState({ kind: "error", message: "Network error. Please try again." });
+      setState({ kind: "error", message: m.network });
     }
   }
 
   if (state.kind === "done") {
     return (
       <div>
-        <h1>Email confirmed</h1>
-        <p className="sub">
-          Your email is verified. Endorsements from the same work-email domain
-          can now earn the employer-overlap signal.
-        </p>
+        <h1>{m.doneTitle}</h1>
+        <p className="sub">{m.doneBody}</p>
         <Link href="/dashboard" className="btn btn-primary btn-lg">
-          Go to dashboard
+          {m.dashboard}
         </Link>
       </div>
     );
@@ -52,10 +48,8 @@ export function EmailConfirmAction({ token }: { token: string }) {
 
   return (
     <div>
-      <h1>Confirm your email</h1>
-      <p className="sub">
-        Click below to confirm the email on your MyVouch account.
-      </p>
+      <h1>{m.title}</h1>
+      <p className="sub">{m.body}</p>
       {state.kind === "error" && (
         <div className="form-error">{state.message}</div>
       )}
@@ -64,7 +58,7 @@ export function EmailConfirmAction({ token }: { token: string }) {
         onClick={confirm}
         disabled={state.kind === "busy"}
       >
-        {state.kind === "busy" ? "Confirming…" : "Confirm my email"}
+        {state.kind === "busy" ? m.confirming : m.confirm}
       </button>
     </div>
   );

@@ -1979,3 +1979,34 @@ p {
   color: var(--ink-faint);
   white-space: nowrap;
 }
+
+/* Language switcher — fixed, present on every page via the root layout. */
+.locale-switcher {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 50;
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--surface, #fff);
+  border: 1px solid var(--line, rgba(0, 0, 0, 0.1));
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+.locale-opt {
+  border: 0;
+  background: transparent;
+  color: var(--ink-soft, #52607a);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 5px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.locale-opt.active {
+  background: var(--brand, #3a52d6);
+  color: var(--on-brand, #fff);
+}

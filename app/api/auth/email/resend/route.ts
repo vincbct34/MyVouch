@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import crypto from "node:crypto";
+import { apiMessages } from "@/lib/apimsg";
 import { setEmailConfirmToken, canResendUserConfirm } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { rateLimitAll, clientIp } from "@/lib/ratelimit";
@@ -10,11 +11,17 @@ import { appBaseUrl } from "@/lib/url";
 /** Owner-initiated resend of their own email confirmation link (cooldown-gated). */
 export async function POST(req: Request) {
   if (!isSameOrigin(req))
-    return NextResponse.json({ error: "Invalid request." }, { status: 403 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.invalidRequest },
+      { status: 403 },
+    );
 
   const user = await getCurrentUser();
   if (!user)
-    return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.notSignedIn },
+      { status: 401 },
+    );
 
   if (user.email_confirmed)
     return NextResponse.json({ ok: true, alreadyConfirmed: true });
@@ -25,14 +32,16 @@ export async function POST(req: Request) {
   ]);
   if (!limited.ok)
     return NextResponse.json(
-      { error: "Too many requests. Please try again later." },
+      { error: apiMessages(req).api.tooManyRequests },
       { status: 429, headers: { "Retry-After": String(limited.retryAfter) } },
     );
 
   // Cooldown so a fresh link can't be minted on every click.
   if (!canResendUserConfirm(user.id))
     return NextResponse.json(
-      { error: "A confirmation email was just sent. Check your inbox." },
+      {
+        error: apiMessages(req).api.confirmJustSent,
+      },
       { status: 429 },
     );
 
@@ -41,9 +50,9 @@ export async function POST(req: Request) {
   const link = `${appBaseUrl(req)}/confirm-email/${token}`;
   enqueueMail({
     to: user.email,
-    subject: "Confirm your email for MyVouch",
-    text: `Confirm your email to unlock verified endorsement signals:\n\n${link}\n`,
-    html: `<p>Confirm your email to unlock verified endorsement signals:</p><p><a href="${link}">Confirm my email</a></p>`,
+    subject: apiMessages(req).email.ownerSubject,
+    text: apiMessages(req).email.ownerResendText(link),
+    html: apiMessages(req).email.ownerResendHtml(link),
   });
 
   return NextResponse.json({ ok: true });

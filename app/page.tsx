@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/session";
+import { getLocale } from "@/lib/locale";
+import { getMessages } from "@/lib/i18n";
 import { TopNav } from "@/components/TopNav";
 import { Footer } from "@/components/Footer";
 import { ShieldIcon, CheckIcon, LinkIcon } from "@/components/Icons";
 
 export default async function HomePage() {
   const user = await getCurrentUser();
+  const m = getMessages(await getLocale()).landing;
 
   return (
     <>
@@ -13,31 +16,26 @@ export default async function HomePage() {
 
       <section className="landing-hero">
         <div className="wrap inner">
-          <span className="kicker">Verified endorsements</span>
-          <h1>References people actually trust.</h1>
-          <p className="lede">
-            MyVouch turns scattered word-of-mouth into a verified wall of
-            endorsements you own. Every reference is checked for a real work
-            email, a shared employer, and a matched identity — so your
-            reputation speaks for itself.
-          </p>
+          <span className="kicker">{m.kicker}</span>
+          <h1>{m.title}</h1>
+          <p className="lede">{m.lede}</p>
           <div className="cta-row">
             {user ? (
               <>
                 <Link href="/dashboard" className="btn btn-primary btn-lg">
-                  Go to your dashboard
+                  {m.goDashboard}
                 </Link>
                 <Link href={`/u/${user.slug}`} className="btn btn-ghost btn-lg">
-                  View your wall
+                  {m.viewWall}
                 </Link>
               </>
             ) : (
               <>
                 <Link href="/signup" className="btn btn-primary btn-lg">
-                  Build your wall — free
+                  {m.buildFree}
                 </Link>
                 <Link href="/login" className="btn btn-ghost btn-lg">
-                  Log in
+                  {m.logIn}
                 </Link>
               </>
             )}
@@ -51,33 +49,22 @@ export default async function HomePage() {
             <span className="ficon">
               <LinkIcon />
             </span>
-            <h3>Share one link</h3>
-            <p>
-              Send your personal MyVouch link to managers, peers, and clients. A
-              guided form makes leaving a thoughtful endorsement take two
-              minutes.
-            </p>
+            <h3>{m.f1Title}</h3>
+            <p>{m.f1Body}</p>
           </div>
           <div className="feature card" id="trust">
             <span className="ficon">
               <ShieldIcon />
             </span>
-            <h3>Verified, not vibes</h3>
-            <p>
-              Each endorsement carries verification signals — work email
-              confirmed, employer overlap, identity matched — so readers know
-              it&rsquo;s real.
-            </p>
+            <h3>{m.f2Title}</h3>
+            <p>{m.f2Body}</p>
           </div>
           <div className="feature card">
             <span className="ficon">
               <CheckIcon />
             </span>
-            <h3>You stay in control</h3>
-            <p>
-              Nothing goes public until you approve it. Moderate your queue,
-              request edits, or decline — your wall, your call.
-            </p>
+            <h3>{m.f3Title}</h3>
+            <p>{m.f3Body}</p>
           </div>
         </div>
       </section>

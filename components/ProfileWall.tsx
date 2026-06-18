@@ -2,9 +2,9 @@
 
 import { useMemo, useState } from "react";
 import type { PublicEndorsement, Relationship } from "@/lib/db";
-import { RELATIONSHIP_LABELS } from "@/lib/ui";
 import { ReviewCard } from "./ReviewCard";
 import { CheckIcon } from "./Icons";
+import { useT } from "./I18nProvider";
 
 type Filter = "all" | Relationship;
 
@@ -30,6 +30,8 @@ export function ProfileWall({
   initialCursor: string | null;
   total: number;
 }) {
+  const t = useT();
+  const m = t.wall;
   const [filter, setFilter] = useState<Filter>("all");
   const [endorsements, setEndorsements] =
     useState<PublicEndorsement[]>(initial);
@@ -89,14 +91,15 @@ export function ProfileWall({
               onClick={() => setFilter(f)}
             >
               {f === "all"
-                ? "All"
-                : `${RELATIONSHIP_LABELS[f as Relationship]}s`}
+                ? m.filterAll
+                : `${t.relationshipLabels[f as Relationship]}s`}
               <span className="ct">{counts[f] ?? 0}</span>
             </button>
           ))}
         </div>
         <span className="sortby">
-          Sorted by <b>Most recent</b>
+          {m.sortedByPre}
+          <b>{m.sortedByValue}</b>
         </span>
       </div>
 
@@ -105,7 +108,7 @@ export function ProfileWall({
           <span className="ec">
             <CheckIcon className="ic" />
           </span>
-          No endorsements in this view yet.
+          {m.emptyView}
         </div>
       ) : (
         <div className="masonry">
@@ -122,7 +125,7 @@ export function ProfileWall({
             onClick={loadMore}
             disabled={loading}
           >
-            {loading ? "Loading…" : "Load more endorsements"}
+            {loading ? m.loading : m.loadMore}
           </button>
         </div>
       )}

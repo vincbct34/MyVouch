@@ -6,17 +6,21 @@ import { Avatar } from "./Avatar";
 import { Stars } from "./Stars";
 import { EmphasisText } from "./EmphasisText";
 import { CheckIcon, ClockIcon, AlertIcon, SearchIcon } from "./Icons";
-import { RELATIONSHIP_LABELS, formatDate, parseStrengths } from "@/lib/ui";
+import { formatDate, parseStrengths } from "@/lib/ui";
+import { useT, useLocale } from "./I18nProvider";
 
 type Tab = "pending" | "approved" | "declined" | "all";
-const TABS: { key: Tab; label: string }[] = [
-  { key: "pending", label: "Pending" },
-  { key: "approved", label: "Published" },
-  { key: "declined", label: "Declined" },
-  { key: "all", label: "All" },
-];
+const TAB_KEYS: Tab[] = ["pending", "approved", "declined", "all"];
+type TabLabelKey = "tabPending" | "tabApproved" | "tabDeclined" | "tabAll";
+const TAB_LABEL: Record<Tab, TabLabelKey> = {
+  pending: "tabPending",
+  approved: "tabApproved",
+  declined: "tabDeclined",
+  all: "tabAll",
+};
 
 export function ModerationQueue({ initial }: { initial: Endorsement[] }) {
+  const m = useT().queue;
   const [items, setItems] = useState<Endorsement[]>(initial);
   const [tab, setTab] = useState<Tab>("pending");
   const [query, setQuery] = useState("");
@@ -62,7 +66,7 @@ export function ModerationQueue({ initial }: { initial: Endorsement[] }) {
       body: JSON.stringify({ status }),
     });
     if (!res.ok) {
-      fireToast("Couldn’t save — try again.");
+      fireToast(m.saveErr);
       return;
     }
     setItems((cur) =>
@@ -72,21 +76,17 @@ export function ModerationQueue({ initial }: { initial: Endorsement[] }) {
           : x,
       ),
     );
-    fireToast(
-      status === "approved"
-        ? "Published to your public wall"
-        : "Declined — hidden from your wall",
-    );
+    fireToast(status === "approved" ? m.toastApproved : m.toastDeclined);
   }
 
   async function remove(e: Endorsement) {
     const res = await fetch(`/api/endorsements/${e.id}`, { method: "DELETE" });
     if (!res.ok) {
-      fireToast("Couldn’t delete — try again.");
+      fireToast(m.deleteErr);
       return;
     }
     setItems((cur) => cur.filter((x) => x.id !== e.id));
-    fireToast("Endorsement deleted");
+    fireToast(m.toastDeleted);
   }
 
   async function saveEdit(e: Endorsement, body: string): Promise<boolean> {
@@ -96,11 +96,11 @@ export function ModerationQueue({ initial }: { initial: Endorsement[] }) {
       body: JSON.stringify({ body }),
     });
     if (!res.ok) {
-      fireToast("Couldn’t save — try again.");
+      fireToast(m.saveErr);
       return false;
     }
     setItems((cur) => cur.map((x) => (x.id === e.id ? { ...x, body } : x)));
-    fireToast("Endorsement updated");
+    fireToast(m.toastUpdated);
     return true;
   }
 
@@ -112,7 +112,7 @@ export function ModerationQueue({ initial }: { initial: Endorsement[] }) {
       body: JSON.stringify({ linkedin_matched: next }),
     });
     if (!res.ok) {
-      fireToast("Couldn’t save — try again.");
+      fireToast(m.saveErr);
       return;
     }
     setItems((cur) =>
@@ -120,7 +120,7 @@ export function ModerationQueue({ initial }: { initial: Endorsement[] }) {
         x.id === e.id ? { ...x, linkedin_matched: next ? 1 : 0 } : x,
       ),
     );
-    fireToast(next ? "Marked LinkedIn as matched" : "Removed LinkedIn match");
+    fireToast(next ? m.toastLinkedinOn : m.toastLinkedinOff);
   }
 
   return (
@@ -128,27 +128,25 @@ export function ModerationQueue({ initial }: { initial: Endorsement[] }) {
       {/* KPIs */}
       <div className="wrap">
         <div className="admin-title">
-          <h1>Moderation queue</h1>
-          <p>
-            Review incoming endorsements before they reach your public wall.
-          </p>
+          <h1>{m.title}</h1>
+          <p>{m.subtitle}</p>
         </div>
         <div className="kpis">
           <div className="kpi amber">
             <div className="n">{counts.pending}</div>
-            <div className="l">Awaiting review</div>
+            <div className="l">{m.kpiPending}</div>
           </div>
           <div className="kpi green">
             <div className="n">{counts.approved}</div>
-            <div className="l">Published</div>
+            <div className="l">{m.kpiPublished}</div>
           </div>
           <div className="kpi">
             <div className="n">{avgPublished}</div>
-            <div className="l">Avg published rating</div>
+            <div className="l">{m.kpiAvg}</div>
           </div>
           <div className="kpi rose">
             <div className="n">{counts.declined}</div>
-            <div className="l">Declined</div>
+            <div className="l">{m.kpiDeclined}</div>
           </div>
         </div>
       </div>
@@ -157,20 +155,20 @@ export function ModerationQueue({ initial }: { initial: Endorsement[] }) {
       <div className="tabbar">
         <div className="wrap bar">
           <div className="tabs">
-            {TABS.map((t) => (
+            {TAB_KEYS.map((key) => (
               <button
-                key={t.key}
-                className={`tab${tab === t.key ? " active" : ""}`}
-                onClick={() => setTab(t.key)}
+                key={key}
+                className={`tab${tab === key ? " active" : ""}`}
+                onClick={() => setTab(key)}
               >
-                {t.label} <span className="ct">{counts[t.key]}</span>
+                {m[TAB_LABEL[key]]} <span className="ct">{counts[key]}</span>
               </button>
             ))}
           </div>
           <div className="admin-search">
             <SearchIcon />
             <input
-              placeholder="Search endorsements"
+              placeholder={m.searchPlaceholder}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
@@ -186,8 +184,8 @@ export function ModerationQueue({ initial }: { initial: Endorsement[] }) {
               <span className="ec">
                 <CheckIcon className="ic" />
               </span>
-              <h3>You&rsquo;re all caught up</h3>
-              <p>Nothing to review in this view.</p>
+              <h3>{m.emptyTitle}</h3>
+              <p>{m.emptyBody}</p>
             </div>
           ) : (
             visible.map((e) => (
@@ -225,6 +223,9 @@ function ModCard({
   onDelete: (e: Endorsement) => void;
   onSaveEdit: (e: Endorsement, body: string) => Promise<boolean>;
 }) {
+  const t = useT();
+  const m = t.queue;
+  const locale = useLocale();
   const strengths = parseStrengths(e.strengths);
   const lowTrust = !e.email_confirmed && !e.employer_overlap_verified;
 
@@ -240,19 +241,19 @@ function ModCard({
   const statusBadge =
     e.status === "approved" ? (
       <span className="badge badge-verified">
-        <span className="dot" /> Published
+        <span className="dot" /> {m.badgePublished}
       </span>
     ) : e.status === "declined" ? (
       <span className="badge badge-declined">
-        <span className="dot" /> Declined
+        <span className="dot" /> {m.badgeDeclined}
       </span>
     ) : lowTrust ? (
       <span className="badge badge-neutral">
-        <span className="dot" /> Needs attention
+        <span className="dot" /> {m.badgeNeedsAttention}
       </span>
     ) : (
       <span className="badge badge-pending">
-        <span className="dot" /> Pending review
+        <span className="dot" /> {m.badgePending}
       </span>
     );
 
@@ -268,7 +269,7 @@ function ModCard({
               <span className="rl">
                 {[e.reviewer_role, e.reviewer_company]
                   .filter(Boolean)
-                  .join(" · ") || "Reviewer"}
+                  .join(" · ") || m.defaultReviewer}
               </span>
             </div>
             {statusBadge}
@@ -287,7 +288,7 @@ function ModCard({
                   disabled={draft.trim().length < 20}
                   onClick={commitEdit}
                 >
-                  Save
+                  {m.save}
                 </button>
                 <button
                   className="btn btn-ghost btn-sm"
@@ -296,7 +297,7 @@ function ModCard({
                     setEditing(false);
                   }}
                 >
-                  Cancel
+                  {m.cancel}
                 </button>
               </div>
             </div>
@@ -306,14 +307,16 @@ function ModCard({
             </p>
           )}
           <div className="tags">
-            <Stars value={e.rating} />
-            <span className="chip">{RELATIONSHIP_LABELS[e.relationship]}</span>
+            <Stars value={e.rating} locale={locale} />
+            <span className="chip">{t.relationshipLabels[e.relationship]}</span>
             {strengths.slice(0, 3).map((s) => (
               <span key={s} className="chip chip-solid">
-                {s}
+                {t.skillLabels[s] ?? s}
               </span>
             ))}
-            <span className="sub">Submitted {formatDate(e.submitted_at)}</span>
+            <span className="sub">
+              {m.submitted(formatDate(e.submitted_at, locale))}
+            </span>
           </div>
         </div>
 
@@ -321,18 +324,18 @@ function ModCard({
           <div className="verify-list">
             <Signal
               ok={!!e.email_confirmed}
-              okLabel="Work email confirmed"
-              waitLabel="Email confirmation pending"
+              okLabel={m.signalEmailOk}
+              waitLabel={m.signalEmailWait}
             />
             <Signal
               ok={!!e.employer_overlap_verified}
-              okLabel="Same work-email domain as you"
-              waitLabel="Different email domain"
+              okLabel={m.signalDomainOk}
+              waitLabel={m.signalDomainWait}
             />
             <Signal
               ok={!!e.linkedin_matched}
-              okLabel="LinkedIn identity matched"
-              waitLabel="LinkedIn not matched"
+              okLabel={m.signalLinkedinOk}
+              waitLabel={m.signalLinkedinWait}
             />
           </div>
 
@@ -344,22 +347,20 @@ function ModCard({
                 rel="noopener noreferrer nofollow"
                 className="btn btn-ghost btn-sm"
               >
-                Open LinkedIn
+                {m.openLinkedin}
               </a>
             )}
             <button
               className="btn btn-ghost btn-sm"
               onClick={() => onToggleLinkedIn(e)}
             >
-              {e.linkedin_matched
-                ? "Unmark LinkedIn match"
-                : "Mark LinkedIn match"}
+              {e.linkedin_matched ? m.unmarkLinkedin : m.markLinkedin}
             </button>
             <button
               className="btn btn-ghost btn-sm"
               onClick={() => setEditing((v) => !v)}
             >
-              {editing ? "Close editor" : "Edit text"}
+              {editing ? m.closeEditor : m.editText}
             </button>
             {confirmDelete ? (
               <>
@@ -367,13 +368,13 @@ function ModCard({
                   className="btn btn-rose btn-sm"
                   onClick={() => onDelete(e)}
                 >
-                  Confirm delete
+                  {m.confirmDelete}
                 </button>
                 <button
                   className="btn btn-ghost btn-sm"
                   onClick={() => setConfirmDelete(false)}
                 >
-                  Cancel
+                  {m.cancel}
                 </button>
               </>
             ) : (
@@ -381,7 +382,7 @@ function ModCard({
                 className="btn btn-ghost btn-sm"
                 onClick={() => setConfirmDelete(true)}
               >
-                Delete
+                {m.delete}
               </button>
             )}
           </div>
@@ -392,40 +393,40 @@ function ModCard({
                 className="btn btn-verified"
                 onClick={() => onModerate(e, "approved")}
               >
-                <CheckIcon className="ic" /> Approve &amp; publish
+                <CheckIcon className="ic" /> {m.approvePublish}
               </button>
               <button
                 className="btn btn-rose"
                 onClick={() => onModerate(e, "declined")}
               >
-                Decline
+                {m.decline}
               </button>
             </div>
           ) : e.status === "approved" ? (
             <>
               <div className="resolved-note live">
-                <CheckIcon /> Live on your public profile
+                <CheckIcon /> {m.liveNote}
               </div>
               <div className="actions">
                 <button
                   className="btn btn-rose"
                   onClick={() => onModerate(e, "declined")}
                 >
-                  Unpublish
+                  {m.unpublish}
                 </button>
               </div>
             </>
           ) : (
             <>
               <div className="resolved-note">
-                <AlertIcon /> Hidden — not shown publicly
+                <AlertIcon /> {m.hiddenNote}
               </div>
               <div className="actions">
                 <button
                   className="btn btn-verified"
                   onClick={() => onModerate(e, "approved")}
                 >
-                  <CheckIcon className="ic" /> Publish
+                  <CheckIcon className="ic" /> {m.publish}
                 </button>
               </div>
             </>

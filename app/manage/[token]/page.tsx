@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getEndorsementByManageToken } from "@/lib/db";
 import { Brandmark } from "@/components/Brandmark";
 import { ManageAction } from "@/components/ManageAction";
+import { getLocale } from "@/lib/locale";
+import { getMessages } from "@/lib/i18n";
 
-export const metadata = { title: "Manage your endorsement" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: getMessages(await getLocale()).manageMeta };
+}
 
 export default async function ManagePage({
   params,

@@ -35,6 +35,24 @@ First-time setup: `cp .env.example .env` and set `SESSION_SECRET` + `BASE_URL`.
 
 ## Architecture
 
+**i18n seam — mirrors the auth seam.** `lib/i18n.ts` holds the message catalogs
+(`messages.en` / `messages.fr`) with **no `next/*` import**, so it's shared by
+server and client and stays unit-testable. `Messages = typeof messages.en`
+makes the type checker enforce that **every locale defines the same keys** — a
+missing translation fails `typecheck`/`build`, not at runtime. The request-bound
+side is `lib/locale.ts` (`getLocale`, reads the `locale` cookie via
+`next/headers`); for API routes use `apiMessages(req)` (`lib/apimsg.ts`), which
+reads the cookie off the request. **Never pass the resolved catalog to a client
+component as a prop** — it contains functions (interpolation helpers) that
+aren't RSC-serializable. Instead `components/I18nProvider.tsx` carries only the
+`Locale` string in context; client components call `useT()` (indexes `messages`
+themselves). Server components call `getLocale()` then `getMessages(locale)`.
+Locale is cookie-driven (no `[locale]` route segment); `LocaleSwitcher` writes
+the cookie and `router.refresh()`es. Storage stays locale-independent:
+`SKILL_OPTIONS` (lib/ui.ts) are canonical English keys persisted/validated, with
+display labels in `messages[*].skillLabels`; relationship `value`s are likewise
+keys, labels live in the catalog.
+
 **Auth seam — keep it.** `lib/auth.ts` holds pure crypto primitives (scrypt
 password hashing, HMAC-signed session tokens, cookie options) with **no Next.js
 imports** so it stays unit-testable in plain Node. The request-bound side lives

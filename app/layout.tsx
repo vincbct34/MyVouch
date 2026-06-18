@@ -1,28 +1,40 @@
 import type { Metadata } from "next";
 import { appBaseUrl } from "@/lib/url";
+import { getLocale } from "@/lib/locale";
+import { getMessages } from "@/lib/i18n";
+import { I18nProvider } from "@/components/I18nProvider";
+import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  metadataBase: new URL(appBaseUrl()),
-  title: {
-    default: "MyVouch — Verified endorsements",
-    template: "%s · MyVouch",
-  },
-  description:
-    "Collect, verify, and publish trusted references. MyVouch turns word-of-mouth into a verified endorsement wall you own.",
-  icons: {
-    icon: "/favicon.svg",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const m = getMessages(await getLocale());
+  return {
+    metadataBase: new URL(appBaseUrl()),
+    title: {
+      default: m.layout.titleDefault,
+      template: "%s · MyVouch",
+    },
+    description: m.layout.description,
+    icons: {
+      icon: "/favicon.svg",
+    },
+  };
+}
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const locale = await getLocale();
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang={locale}>
+      <body>
+        <I18nProvider locale={locale}>
+          {children}
+          <LocaleSwitcher />
+        </I18nProvider>
+      </body>
     </html>
   );
 }

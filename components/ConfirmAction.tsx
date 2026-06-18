@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useT } from "./I18nProvider";
 
 type State =
   | { kind: "idle" }
@@ -12,6 +13,7 @@ type State =
   | { kind: "error"; message: string };
 
 export function ConfirmAction({ token }: { token: string }) {
+  const m = useT().confirmAction;
   const [state, setState] = useState<State>({ kind: "idle" });
   const [email, setEmail] = useState("");
 
@@ -29,15 +31,12 @@ export function ConfirmAction({ token }: { token: string }) {
         return;
       }
       if (!res.ok) {
-        setState({
-          kind: "error",
-          message: json.error ?? "Something went wrong.",
-        });
+        setState({ kind: "error", message: json.error ?? m.generic });
         return;
       }
       setState({ kind: "done", slug: json.slug });
     } catch {
-      setState({ kind: "error", message: "Network error. Please try again." });
+      setState({ kind: "error", message: m.network });
     }
   }
 
@@ -51,20 +50,17 @@ export function ConfirmAction({ token }: { token: string }) {
       // Always generic — never reveal whether a pending endorsement exists.
       setState({ kind: "resent" });
     } catch {
-      setState({ kind: "error", message: "Network error. Please try again." });
+      setState({ kind: "error", message: m.network });
     }
   }
 
   if (state.kind === "done") {
     return (
       <div>
-        <h1>Email confirmed</h1>
-        <p className="sub">
-          Thanks — your work email is verified. The profile owner will see your
-          endorsement marked as confirmed when they review it.
-        </p>
+        <h1>{m.doneTitle}</h1>
+        <p className="sub">{m.doneBody}</p>
         <Link href={`/u/${state.slug}`} className="btn btn-primary btn-lg">
-          View the wall
+          {m.viewWall}
         </Link>
       </div>
     );
@@ -73,11 +69,8 @@ export function ConfirmAction({ token }: { token: string }) {
   if (state.kind === "resent") {
     return (
       <div>
-        <h1>Check your inbox</h1>
-        <p className="sub">
-          If you have a pending endorsement, a fresh confirmation link is on its
-          way. It may take a minute to arrive.
-        </p>
+        <h1>{m.resentTitle}</h1>
+        <p className="sub">{m.resentBody}</p>
       </div>
     );
   }
@@ -85,15 +78,12 @@ export function ConfirmAction({ token }: { token: string }) {
   if (state.kind === "expired") {
     return (
       <div>
-        <h1>Link expired</h1>
-        <p className="sub">
-          This confirmation link has expired. Enter the email you submitted with
-          and we&rsquo;ll send a fresh one.
-        </p>
+        <h1>{m.expiredTitle}</h1>
+        <p className="sub">{m.expiredBody}</p>
         <input
           type="email"
           className="input"
-          placeholder="you@company.com"
+          placeholder={m.emailPlaceholder}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
@@ -103,7 +93,7 @@ export function ConfirmAction({ token }: { token: string }) {
           disabled={!email.trim() || !state.slug}
           onClick={() => state.slug && resend(state.slug)}
         >
-          Send a new link
+          {m.sendNew}
         </button>
       </div>
     );
@@ -111,11 +101,8 @@ export function ConfirmAction({ token }: { token: string }) {
 
   return (
     <div>
-      <h1>Confirm your endorsement</h1>
-      <p className="sub">
-        Click below to confirm your work email and verify the endorsement you
-        submitted.
-      </p>
+      <h1>{m.title}</h1>
+      <p className="sub">{m.body}</p>
       {state.kind === "error" && (
         <div className="form-error">{state.message}</div>
       )}
@@ -124,7 +111,7 @@ export function ConfirmAction({ token }: { token: string }) {
         onClick={confirm}
         disabled={state.kind === "busy"}
       >
-        {state.kind === "busy" ? "Confirming…" : "Confirm my email"}
+        {state.kind === "busy" ? m.confirming : m.confirm}
       </button>
     </div>
   );

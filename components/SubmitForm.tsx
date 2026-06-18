@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { StarIcon, ShieldIcon, CheckIcon } from "./Icons";
-import { RELATIONSHIP_TILES, RATING_WORDS, SKILL_OPTIONS } from "@/lib/ui";
+import { SKILL_OPTIONS } from "@/lib/ui";
+import { useT } from "./I18nProvider";
 import type { Relationship } from "@/lib/db";
 
 const MAX = 600;
@@ -15,6 +16,8 @@ export function SubmitForm({
   ownerName: string;
   ownerSlug: string;
 }) {
+  const t = useT();
+  const m = t.submit;
   const firstName = ownerName.split(" ")[0];
 
   // Bot defense: a hidden honeypot field real users never fill, plus the time
@@ -40,10 +43,9 @@ export function SubmitForm({
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
-    if (!relationship) return setError("Tell us how you worked together.");
-    if (rating < 1) return setError("Add an overall rating.");
-    if (body.trim().length < 20)
-      return setError("Your endorsement is a little short — add a bit more.");
+    if (!relationship) return setError(m.errRel);
+    if (rating < 1) return setError(m.errRating);
+    if (body.trim().length < 20) return setError(m.errShort);
 
     const fd = new FormData(e.currentTarget);
     setBusy(true);
@@ -66,7 +68,7 @@ export function SubmitForm({
     });
     const json = await res.json();
     if (!res.ok) {
-      setError(json.error ?? "Something went wrong.");
+      setError(json.error ?? m.generic);
       setBusy(false);
       return;
     }
@@ -80,14 +82,13 @@ export function SubmitForm({
         <span className="seal">
           <CheckIcon />
         </span>
-        <h2>Thank you — it&rsquo;s on its way</h2>
+        <h2>{m.successTitle}</h2>
         <p className="muted" style={{ maxWidth: 420 }}>
-          Your endorsement has been sent to {firstName} for review. It stays
-          private until they approve it — then it appears on their public wall.
+          {m.successBody(firstName)}
         </p>
         <div className="links">
           <Link href={`/u/${ownerSlug}`} className="btn btn-ghost">
-            View {firstName}&rsquo;s wall
+            {m.viewWall(firstName)}
           </Link>
         </div>
       </div>
@@ -116,15 +117,15 @@ export function SubmitForm({
       <section className="step">
         <div className="step-head">
           <span className="step-num">1</span>
-          <h3>Who are you?</h3>
+          <h3>{m.step1}</h3>
         </div>
         <div className="row-2">
           <div className="field">
-            <label htmlFor="name">Full name</label>
+            <label htmlFor="name">{m.name}</label>
             <input className="input" id="name" name="name" required />
           </div>
           <div className="field">
-            <label htmlFor="email">Work email</label>
+            <label htmlFor="email">{m.email}</label>
             <input
               className="input"
               id="email"
@@ -136,27 +137,27 @@ export function SubmitForm({
         </div>
         <div className="row-2">
           <div className="field">
-            <label htmlFor="role">Your role</label>
+            <label htmlFor="role">{m.role}</label>
             <input
               className="input"
               id="role"
               name="role"
-              placeholder="Engineering Manager"
+              placeholder={m.rolePlaceholder}
             />
           </div>
           <div className="field">
-            <label htmlFor="company">Company</label>
+            <label htmlFor="company">{m.company}</label>
             <input
               className="input"
               id="company"
               name="company"
-              placeholder="Acme Inc."
+              placeholder={m.companyPlaceholder}
             />
           </div>
         </div>
         <div className="field">
           <label htmlFor="linkedin">
-            LinkedIn profile <span className="muted">(optional)</span>
+            {m.linkedin} <span className="muted">{m.optional}</span>
           </label>
           <input
             className="input"
@@ -172,19 +173,19 @@ export function SubmitForm({
       <section className="step">
         <div className="step-head">
           <span className="step-num">2</span>
-          <h3>How did you work together?</h3>
+          <h3>{m.step2}</h3>
         </div>
         <div className="rel-grid">
-          {RELATIONSHIP_TILES.map((t) => (
+          {t.relationshipTiles.map((tile) => (
             <button
               type="button"
-              key={t.value}
-              className={`rel${relationship === t.value ? " sel" : ""}`}
-              onClick={() => setRelationship(t.value)}
+              key={tile.value}
+              className={`rel${relationship === tile.value ? " sel" : ""}`}
+              onClick={() => setRelationship(tile.value)}
             >
-              <span className="em">{t.emoji}</span>
-              <span className="t">{t.title}</span>
-              <span className="s">{t.sub}</span>
+              <span className="em">{tile.emoji}</span>
+              <span className="t">{tile.title}</span>
+              <span className="s">{tile.sub}</span>
             </button>
           ))}
         </div>
@@ -194,7 +195,7 @@ export function SubmitForm({
       <section className="step">
         <div className="step-head">
           <span className="step-num">3</span>
-          <h3>Overall, how was working with {firstName}?</h3>
+          <h3>{m.step3(firstName)}</h3>
         </div>
         <div className="star-row">
           <span className="star-pick" onMouseLeave={() => setHover(0)}>
@@ -202,7 +203,7 @@ export function SubmitForm({
               <button
                 type="button"
                 key={i}
-                aria-label={`${i} star`}
+                aria-label={m.starAria(i)}
                 onMouseEnter={() => setHover(i)}
                 onClick={() => setRating(i)}
               >
@@ -211,7 +212,7 @@ export function SubmitForm({
             ))}
           </span>
           {shown > 0 && (
-            <span className="star-label">{RATING_WORDS[shown]}</span>
+            <span className="star-label">{t.ratingWords[shown]}</span>
           )}
         </div>
       </section>
@@ -220,7 +221,7 @@ export function SubmitForm({
       <section className="step">
         <div className="step-head">
           <span className="step-num">4</span>
-          <h3>Your endorsement</h3>
+          <h3>{m.step4}</h3>
         </div>
         <textarea
           className="textarea"
@@ -228,7 +229,7 @@ export function SubmitForm({
           maxLength={MAX}
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          placeholder={`What made ${firstName} great to work with? Be specific — a story or result is worth more than adjectives.`}
+          placeholder={m.bodyPlaceholder(firstName)}
         />
         <div className="counter">
           {body.length}/{MAX}
@@ -240,7 +241,7 @@ export function SubmitForm({
         <div className="step-head">
           <span className="step-num">5</span>
           <h3>
-            Strengths <span className="muted">(optional)</span>
+            {m.step5} <span className="muted">{m.optional}</span>
           </h3>
         </div>
         <div className="skills">
@@ -251,7 +252,7 @@ export function SubmitForm({
               className={`skill${skills.includes(s) ? " sel" : ""}`}
               onClick={() => toggleSkill(s)}
             >
-              {s}
+              {t.skillLabels[s] ?? s}
             </button>
           ))}
         </div>
@@ -266,10 +267,10 @@ export function SubmitForm({
       <div className="submit-bar">
         <span className="trust">
           <ShieldIcon />
-          Verified and held privately until {firstName} approves it.
+          {m.trust(firstName)}
         </span>
         <button className="btn btn-primary btn-lg" disabled={busy}>
-          {busy ? "Sending…" : "Submit endorsement"}
+          {busy ? m.submitting : m.submit}
         </button>
       </div>
     </form>

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/session";
+import { apiMessages } from "@/lib/apimsg";
 import { updatePassword, bumpSessionEpoch, appendAuditLog } from "@/lib/db";
 import {
   hashPassword,
@@ -13,11 +14,17 @@ import { isSameOrigin } from "@/lib/http";
 
 export async function POST(req: Request) {
   if (!isSameOrigin(req))
-    return NextResponse.json({ error: "Invalid request." }, { status: 403 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.invalidRequest },
+      { status: 403 },
+    );
 
   const user = await getCurrentUser();
   if (!user)
-    return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.notAuthenticated },
+      { status: 401 },
+    );
 
   // Throttle current-password guessing: per account AND per IP.
   const limited = rateLimitAll([
@@ -26,7 +33,7 @@ export async function POST(req: Request) {
   ]);
   if (!limited.ok)
     return NextResponse.json(
-      { error: "Too many attempts. Please try again later." },
+      { error: apiMessages(req).api.tooManyAttempts },
       { status: 429, headers: { "Retry-After": String(limited.retryAfter) } },
     );
 
@@ -34,7 +41,10 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.invalidRequest },
+      { status: 400 },
+    );
   }
 
   const current = String(body.current_password ?? "");
@@ -42,24 +52,28 @@ export async function POST(req: Request) {
 
   if (next.length < 8)
     return NextResponse.json(
-      { error: "New password must be at least 8 characters." },
+      {
+        error: apiMessages(req).api.newPwMin,
+      },
       { status: 400 },
     );
   if (next.length > 256)
     return NextResponse.json(
-      { error: "New password must be 256 characters or fewer." },
+      {
+        error: apiMessages(req).api.newPwMax,
+      },
       { status: 400 },
     );
 
   if (!verifyPassword(current, user.password_hash))
     return NextResponse.json(
-      { error: "Current password is incorrect." },
+      { error: apiMessages(req).api.currentPwWrong },
       { status: 401 },
     );
 
   if (verifyPassword(next, user.password_hash))
     return NextResponse.json(
-      { error: "New password must be different from the current one." },
+      { error: apiMessages(req).api.newPwDifferent },
       { status: 400 },
     );
 

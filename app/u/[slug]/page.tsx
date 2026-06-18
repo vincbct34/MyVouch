@@ -11,6 +11,8 @@ import {
 } from "@/lib/db";
 import { appBaseUrl } from "@/lib/url";
 import { getCurrentUser } from "@/lib/session";
+import { getLocale } from "@/lib/locale";
+import { getMessages } from "@/lib/i18n";
 import { TopNav } from "@/components/TopNav";
 import { Footer } from "@/components/Footer";
 import { Avatar } from "@/components/Avatar";
@@ -24,11 +26,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const owner = getUserBySlug(slug);
-  if (!owner) return { title: "Profile not found" };
+  const m = getMessages(await getLocale()).profile;
+  if (!owner) return { title: m.metaNotFound };
 
-  const title = `${owner.name} — verified endorsements`;
-  const description =
-    owner.headline ?? `Verified endorsements for ${owner.name} on MyVouch.`;
+  const title = m.metaTitle(owner.name);
+  const description = owner.headline ?? m.metaDesc(owner.name);
   const url = `${appBaseUrl()}/u/${owner.slug}`;
   // Sharing the link (LinkedIn/X) is the core flow — give it a rich unfurl.
   return {
@@ -60,6 +62,7 @@ export default async function ProfilePage({
   if (!owner) notFound();
 
   const viewer = await getCurrentUser();
+  const m = getMessages(await getLocale()).profile;
   // First page for the wall; aggregate stats computed over ALL approved rows.
   const firstRows = getApprovedEndorsements(owner.id);
   const firstPage = firstRows.map(toPublicEndorsement);
@@ -95,12 +98,13 @@ export default async function ProfilePage({
               <div className="badges">
                 {verifiedCount > 0 ? (
                   <span className="badge badge-brand">
-                    <span className="dot" /> {verifiedCount} email-verified
+                    <span className="dot" />{" "}
+                    {m.badgeEmailVerified(verifiedCount)}
                   </span>
                 ) : null}
                 {owner.open_to_work ? (
                   <span className="badge badge-brand">
-                    <span className="dot" /> Open to work
+                    <span className="dot" /> {m.openToWork}
                   </span>
                 ) : null}
               </div>
@@ -111,23 +115,23 @@ export default async function ProfilePage({
             <div className="stat-strip">
               <div className="stat-box">
                 <span className="n">{total}</span>
-                <span className="l">Published reviews</span>
+                <span className="l">{m.statPublished}</span>
               </div>
               <div className="stat-box">
                 <span className="n">
                   {avg}
                   {avg !== "—" && "/5"}
                 </span>
-                <span className="l">Avg rating</span>
+                <span className="l">{m.statAvg}</span>
               </div>
               <div className="stat-box">
                 <span className="n">{wouldRehire}%</span>
-                <span className="l">Would recommend</span>
+                <span className="l">{m.statRecommend}</span>
               </div>
             </div>
             <div className="hero-cta">
               <Link href={`/u/${owner.slug}/vouch`} className="btn btn-primary">
-                <PlusIcon className="ic" /> Add your endorsement
+                <PlusIcon className="ic" /> {m.addEndorsement}
               </Link>
             </div>
           </div>
@@ -141,11 +145,10 @@ export default async function ProfilePage({
               <ShieldIcon className="ic" />
             </span>
             <p style={{ marginBottom: 18 }}>
-              {owner.name.split(" ")[0]} hasn&rsquo;t published any endorsements
-              yet. Be the first to vouch.
+              {m.emptyWall(owner.name.split(" ")[0])}
             </p>
             <Link href={`/u/${owner.slug}/vouch`} className="btn btn-primary">
-              <PlusIcon className="ic" /> Write an endorsement
+              <PlusIcon className="ic" /> {m.writeEndorsement}
             </Link>
           </div>
         ) : (
@@ -159,17 +162,14 @@ export default async function ProfilePage({
 
         <div className="cta-band">
           <div>
-            <h2>Worked with {owner.name.split(" ")[0]}?</h2>
-            <p>
-              Add a verified endorsement — it takes about two minutes and helps
-              their reputation travel.
-            </p>
+            <h2>{m.ctaTitle(owner.name.split(" ")[0])}</h2>
+            <p>{m.ctaBody}</p>
           </div>
           <Link
             href={`/u/${owner.slug}/vouch`}
             className="btn btn-primary btn-lg"
           >
-            <PlusIcon className="ic" /> Add your endorsement
+            <PlusIcon className="ic" /> {m.addEndorsement}
           </Link>
         </div>
       </div>

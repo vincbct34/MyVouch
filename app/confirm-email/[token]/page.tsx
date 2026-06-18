@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
 import { EmailConfirmAction } from "@/components/EmailConfirmAction";
 import { Brandmark } from "@/components/Brandmark";
+import { getLocale } from "@/lib/locale";
+import { getMessages } from "@/lib/i18n";
 
-export const metadata = { title: "Confirm your email" };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: getMessages(await getLocale()).confirmEmailMeta };
+}
 
 export default async function ConfirmEmailPage({
   params,

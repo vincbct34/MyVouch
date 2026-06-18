@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import crypto from "node:crypto";
+import { apiMessages } from "@/lib/apimsg";
 import {
   getUserBySlug,
   createEndorsement,
@@ -54,7 +55,10 @@ export async function GET(
   const { slug } = await params;
   const owner = getUserBySlug(slug);
   if (!owner)
-    return NextResponse.json({ error: "Profile not found." }, { status: 404 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.profileNotFound },
+      { status: 404 },
+    );
 
   const url = new URL(req.url);
   const cursor = decodeCursor(url.searchParams.get("cursor"));
@@ -76,7 +80,10 @@ export async function POST(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   if (!isSameOrigin(req))
-    return NextResponse.json({ error: "Invalid request." }, { status: 403 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.invalidRequest },
+      { status: 403 },
+    );
 
   const { slug } = await params;
 
@@ -84,7 +91,10 @@ export async function POST(
   try {
     b = await req.json();
   } catch {
-    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.invalidRequest },
+      { status: 400 },
+    );
   }
 
   // Bot defense (honeypot + timing). Respond 200-ok so bots get no signal to
@@ -122,47 +132,65 @@ export async function POST(
   ]);
   if (!limited.ok)
     return NextResponse.json(
-      { error: "Too many submissions. Please try again later." },
+      { error: apiMessages(req).api.tooManySubmissions },
       { status: 429, headers: { "Retry-After": String(limited.retryAfter) } },
     );
 
   const owner = getUserBySlug(slug);
   if (!owner)
-    return NextResponse.json({ error: "Profile not found." }, { status: 404 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.profileNotFound },
+      { status: 404 },
+    );
 
   if (reviewer_name.length < 2)
-    return NextResponse.json({ error: "Enter your name." }, { status: 400 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.enterName },
+      { status: 400 },
+    );
   if (reviewer_name.length > 120)
-    return NextResponse.json({ error: "Name is too long." }, { status: 400 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.nameLong },
+      { status: 400 },
+    );
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(reviewer_email))
     return NextResponse.json(
-      { error: "Enter a valid email." },
+      { error: apiMessages(req).api.enterEmail },
       { status: 400 },
     );
   if (reviewer_email.length > 254)
-    return NextResponse.json({ error: "Email is too long." }, { status: 400 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.emailLong },
+      { status: 400 },
+    );
   if (reviewer_role && reviewer_role.length > 120)
-    return NextResponse.json({ error: "Role is too long." }, { status: 400 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.roleLong },
+      { status: 400 },
+    );
   if (reviewer_company && reviewer_company.length > 120)
     return NextResponse.json(
-      { error: "Company is too long." },
+      { error: apiMessages(req).api.companyLong },
       { status: 400 },
     );
   if (reviewer_linkedin && reviewer_linkedin.length > 200)
     return NextResponse.json(
-      { error: "LinkedIn URL is too long." },
+      { error: apiMessages(req).api.linkedinLong },
       { status: 400 },
     );
   if (!RELATIONSHIPS.includes(relationship))
     return NextResponse.json(
-      { error: "Choose how you worked together." },
+      { error: apiMessages(req).api.chooseRelationship },
       { status: 400 },
     );
   if (!Number.isInteger(rating) || rating < 1 || rating > 5)
-    return NextResponse.json({ error: "Add a rating." }, { status: 400 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.addRating },
+      { status: 400 },
+    );
   if (body.length < 20 || body.length > 600)
     return NextResponse.json(
-      { error: "Endorsement must be 20–600 characters." },
+      { error: apiMessages(req).api.endorsement20to600 },
       { status: 400 },
     );
 
@@ -196,8 +224,7 @@ export async function POST(
     if (isConstraintError(err)) {
       return NextResponse.json(
         {
-          error:
-            "You already have an endorsement awaiting review for this profile. Check your email to confirm it.",
+          error: apiMessages(req).api.duplicatePending,
         },
         { status: 409 },
       );
@@ -215,9 +242,17 @@ export async function POST(
   const manageLink = `${base}/manage/${manage_token}`;
   enqueueMail({
     to: reviewer_email,
-    subject: `Confirm your endorsement of ${owner.name}`,
-    text: `Thanks for vouching for ${owner.name}. Confirm your work email to verify your endorsement:\n\n${link}\n\nChanged your mind or didn't write this? Withdraw it here:\n${manageLink}`,
-    html: `<p>Thanks for vouching for <strong>${escapeHtml(owner.name)}</strong>.</p><p>Confirm your work email to verify your endorsement:</p><p><a href="${link}">Confirm my endorsement</a></p><p style="color:#666">Changed your mind or didn't write this? <a href="${manageLink}">Withdraw it here</a>.</p>`,
+    subject: apiMessages(req).email.confirmEndorsementSubject(owner.name),
+    text: apiMessages(req).email.confirmEndorsementText(
+      owner.name,
+      link,
+      manageLink,
+    ),
+    html: apiMessages(req).email.confirmEndorsementHtml(
+      escapeHtml(owner.name),
+      link,
+      manageLink,
+    ),
   });
 
   return NextResponse.json({ ok: true });

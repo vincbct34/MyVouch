@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import { SESSION_COOKIE } from "@/lib/auth";
+import { apiMessages } from "@/lib/apimsg";
 import { getCurrentUser } from "@/lib/session";
 import { bumpSessionEpoch } from "@/lib/db";
 import { isSameOrigin } from "@/lib/http";
 
 export async function POST(req: Request) {
   if (!isSameOrigin(req))
-    return NextResponse.json({ error: "Invalid request." }, { status: 403 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.invalidRequest },
+      { status: 403 },
+    );
 
   // Bump the epoch so the just-cleared token (and any other copies) can't be
   // replayed even if it was captured before logout.

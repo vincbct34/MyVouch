@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getUserByEmail } from "@/lib/db";
+import { apiMessages } from "@/lib/apimsg";
 import {
   verifyPassword,
   dummyVerify,
@@ -12,13 +13,19 @@ import { isSameOrigin } from "@/lib/http";
 
 export async function POST(req: Request) {
   if (!isSameOrigin(req))
-    return NextResponse.json({ error: "Invalid request." }, { status: 403 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.invalidRequest },
+      { status: 403 },
+    );
 
   let body: Record<string, unknown>;
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.invalidRequest },
+      { status: 400 },
+    );
   }
 
   const email = String(body.email ?? "")
@@ -34,13 +41,13 @@ export async function POST(req: Request) {
   ]);
   if (!limited.ok)
     return NextResponse.json(
-      { error: "Too many attempts. Please try again later." },
+      { error: apiMessages(req).api.tooManyAttempts },
       { status: 429, headers: { "Retry-After": String(limited.retryAfter) } },
     );
 
   if (email.length > 254 || password.length > 256) {
     return NextResponse.json(
-      { error: "Incorrect email or password." },
+      { error: apiMessages(req).api.incorrectCredentials },
       { status: 401 },
     );
   }
@@ -50,13 +57,13 @@ export async function POST(req: Request) {
     // Spend equivalent scrypt time so timing doesn't reveal the email exists.
     dummyVerify(password);
     return NextResponse.json(
-      { error: "Incorrect email or password." },
+      { error: apiMessages(req).api.incorrectCredentials },
       { status: 401 },
     );
   }
   if (!verifyPassword(password, user.password_hash)) {
     return NextResponse.json(
-      { error: "Incorrect email or password." },
+      { error: apiMessages(req).api.incorrectCredentials },
       { status: 401 },
     );
   }

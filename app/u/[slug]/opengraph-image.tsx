@@ -1,10 +1,12 @@
 import { ImageResponse } from "next/og";
 import { getUserBySlug, getApprovedStats } from "@/lib/db";
+import { getLocale } from "@/lib/locale";
+import { getMessages, DEFAULT_LOCALE } from "@/lib/i18n";
 
 // Dynamic social-share image for /u/[slug]. Next wires this as the OG/Twitter
 // image automatically. Runs on the Node runtime (better-sqlite3 isn't edge-safe).
 export const runtime = "nodejs";
-export const alt = "Verified endorsements on MyVouch";
+export const alt = getMessages(DEFAULT_LOCALE).og.alt;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -22,8 +24,9 @@ export default async function Image({
   const { slug } = await params;
   const owner = getUserBySlug(slug);
   const stats = owner ? getApprovedStats(owner.id) : null;
+  const m = getMessages(await getLocale()).og;
   const name = owner?.name ?? "MyVouch";
-  const headline = owner?.headline ?? "Verified endorsements";
+  const headline = owner?.headline ?? m.headlineFallback;
 
   return new ImageResponse(
     <div
@@ -68,12 +71,12 @@ export default async function Image({
       </div>
 
       <div style={{ display: "flex", gap: 56, color: INK }}>
-        <Stat n={String(stats?.total ?? 0)} l="Endorsements" />
+        <Stat n={String(stats?.total ?? 0)} l={m.statEndorsements} />
         <Stat
           n={stats?.avgRating != null ? `${stats.avgRating.toFixed(1)}/5` : "—"}
-          l="Avg rating"
+          l={m.statAvg}
         />
-        <Stat n={String(stats?.emailVerified ?? 0)} l="Email-verified" />
+        <Stat n={String(stats?.emailVerified ?? 0)} l={m.statEmailVerified} />
       </div>
     </div>,
     size,

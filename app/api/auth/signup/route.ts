@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import crypto from "node:crypto";
+import { apiMessages } from "@/lib/apimsg";
 import {
   createUser,
   getUserByEmail,
@@ -20,13 +21,19 @@ import { appBaseUrl } from "@/lib/url";
 
 export async function POST(req: Request) {
   if (!isSameOrigin(req))
-    return NextResponse.json({ error: "Invalid request." }, { status: 403 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.invalidRequest },
+      { status: 403 },
+    );
 
   let body: Record<string, unknown>;
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.invalidRequest },
+      { status: 400 },
+    );
   }
 
   const name = String(body.name ?? "").trim();
@@ -42,7 +49,7 @@ export async function POST(req: Request) {
   ]);
   if (!limited.ok)
     return NextResponse.json(
-      { error: "Too many signups. Please try again later." },
+      { error: apiMessages(req).api.tooManySignups },
       { status: 429, headers: { "Retry-After": String(limited.retryAfter) } },
     );
   const password = String(body.password ?? "");
@@ -51,42 +58,48 @@ export async function POST(req: Request) {
 
   if (name.length < 2)
     return NextResponse.json(
-      { error: "Please enter your name." },
+      { error: apiMessages(req).api.pleaseEnterName },
       { status: 400 },
     );
   if (name.length > 120)
-    return NextResponse.json({ error: "Name is too long." }, { status: 400 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.nameLong },
+      { status: 400 },
+    );
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))
     return NextResponse.json(
-      { error: "Enter a valid email." },
+      { error: apiMessages(req).api.enterEmail },
       { status: 400 },
     );
   if (email.length > 254)
-    return NextResponse.json({ error: "Email is too long." }, { status: 400 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.emailLong },
+      { status: 400 },
+    );
   if (password.length < 8)
     return NextResponse.json(
-      { error: "Password must be at least 8 characters." },
+      { error: apiMessages(req).api.pwMin },
       { status: 400 },
     );
   if (password.length > 256)
     return NextResponse.json(
-      { error: "Password must be 256 characters or fewer." },
+      { error: apiMessages(req).api.pwMax },
       { status: 400 },
     );
   if (headline && headline.length > 160)
     return NextResponse.json(
-      { error: "Headline is too long." },
+      { error: apiMessages(req).api.headlineLong },
       { status: 400 },
     );
   if (location && location.length > 120)
     return NextResponse.json(
-      { error: "Location is too long." },
+      { error: apiMessages(req).api.locationLong },
       { status: 400 },
     );
 
   if (getUserByEmail(email))
     return NextResponse.json(
-      { error: "An account with this email already exists." },
+      { error: apiMessages(req).api.accountExists },
       { status: 409 },
     );
 
@@ -113,9 +126,9 @@ export async function POST(req: Request) {
   const link = `${appBaseUrl(req)}/confirm-email/${emailToken}`;
   enqueueMail({
     to: email,
-    subject: "Confirm your email for MyVouch",
-    text: `Welcome to MyVouch. Confirm your email to unlock verified endorsement signals:\n\n${link}\n`,
-    html: `<p>Welcome to MyVouch.</p><p>Confirm your email to unlock verified endorsement signals:</p><p><a href="${link}">Confirm my email</a></p>`,
+    subject: apiMessages(req).email.ownerSubject,
+    text: apiMessages(req).email.signupText(link),
+    html: apiMessages(req).email.signupHtml(link),
   });
 
   const res = NextResponse.json({ ok: true, slug });

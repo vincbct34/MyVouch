@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { SESSION_COOKIE } from "@/lib/auth";
+import { apiMessages } from "@/lib/apimsg";
 import { getCurrentUser } from "@/lib/session";
 import { bumpSessionEpoch, appendAuditLog } from "@/lib/db";
 import { isSameOrigin } from "@/lib/http";
@@ -11,11 +12,17 @@ import { isSameOrigin } from "@/lib/http";
  */
 export async function POST(req: Request) {
   if (!isSameOrigin(req))
-    return NextResponse.json({ error: "Invalid request." }, { status: 403 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.invalidRequest },
+      { status: 403 },
+    );
 
   const user = await getCurrentUser();
   if (!user)
-    return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.notAuthenticated },
+      { status: 401 },
+    );
 
   bumpSessionEpoch(user.id);
   appendAuditLog(user.id, "session.logout_all");

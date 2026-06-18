@@ -4,9 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Brandmark } from "@/components/Brandmark";
+import { useT } from "@/components/I18nProvider";
 
 export default function SignupPage() {
   const router = useRouter();
+  const m = useT().signup;
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -22,7 +24,7 @@ export default function SignupPage() {
     });
     const json = await res.json();
     if (!res.ok) {
-      setError(json.error ?? "Something went wrong.");
+      setError(json.error ?? m.generic);
       setBusy(false);
       return;
     }
@@ -35,38 +37,36 @@ export default function SignupPage() {
       <div className="auth-card">
         <Brandmark size="lg" />
         <div>
-          <h1>Build your wall</h1>
-          <p className="sub">
-            Start collecting verified endorsements in minutes.
-          </p>
+          <h1>{m.title}</h1>
+          <p className="sub">{m.sub}</p>
         </div>
         {error && <div className="form-error">{error}</div>}
         <form onSubmit={onSubmit}>
           <div className="field">
-            <label htmlFor="name">Full name</label>
+            <label htmlFor="name">{m.name}</label>
             <input className="input" id="name" name="name" required />
           </div>
           <div className="field">
-            <label htmlFor="headline">Headline</label>
+            <label htmlFor="headline">{m.headline}</label>
             <input
               className="input"
               id="headline"
               name="headline"
-              placeholder="Product Designer · ex-Stripe"
+              placeholder={m.headlinePlaceholder}
             />
-            <span className="hint">Shown under your name on your wall.</span>
+            <span className="hint">{m.headlineHint}</span>
           </div>
           <div className="field">
-            <label htmlFor="location">Location</label>
+            <label htmlFor="location">{m.location}</label>
             <input
               className="input"
               id="location"
               name="location"
-              placeholder="Paris, France"
+              placeholder={m.locationPlaceholder}
             />
           </div>
           <div className="field">
-            <label htmlFor="email">Work email</label>
+            <label htmlFor="email">{m.email}</label>
             <input
               className="input"
               id="email"
@@ -77,7 +77,7 @@ export default function SignupPage() {
             />
           </div>
           <div className="field">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">{m.password}</label>
             <input
               className="input"
               id="password"
@@ -87,14 +87,15 @@ export default function SignupPage() {
               minLength={8}
               required
             />
-            <span className="hint">At least 8 characters.</span>
+            <span className="hint">{m.passwordHint}</span>
           </div>
           <button className="btn btn-primary btn-lg" disabled={busy}>
-            {busy ? "Creating…" : "Create my wall"}
+            {busy ? m.submitting : m.submit}
           </button>
         </form>
         <p className="auth-foot">
-          Already have an account? <Link href="/login">Log in</Link>
+          {m.footPre}
+          <Link href="/login">{m.footLink}</Link>
         </p>
       </div>
     </main>

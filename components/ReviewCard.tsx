@@ -2,10 +2,14 @@ import { Avatar } from "./Avatar";
 import { Stars } from "./Stars";
 import { EmphasisText } from "./EmphasisText";
 import type { PublicEndorsement } from "@/lib/db";
-import { RELATIONSHIP_LABELS, formatDate, parseStrengths } from "@/lib/ui";
+import { formatDate, parseStrengths } from "@/lib/ui";
+import { useT, useLocale } from "./I18nProvider";
 
 /** A single published endorsement on the public wall. */
 export function ReviewCard({ e }: { e: PublicEndorsement }) {
+  const t = useT();
+  const locale = useLocale();
+  const m = t.review;
   const strengths = parseStrengths(e.strengths);
   return (
     <article className="review">
@@ -14,23 +18,20 @@ export function ReviewCard({ e }: { e: PublicEndorsement }) {
         <EmphasisText text={e.body} />
       </p>
       <div className="meta-row">
-        <Stars value={e.rating} />
+        <Stars value={e.rating} locale={locale} />
         {e.email_confirmed ? (
-          <span
-            className="chip chip-verified"
-            title="Reviewer confirmed their work email"
-          >
-            ✓ Verified
+          <span className="chip chip-verified" title={m.verifiedTitle}>
+            ✓ {m.verifiedChip}
           </span>
         ) : null}
-        <span className="chip">{RELATIONSHIP_LABELS[e.relationship]}</span>
+        <span className="chip">{t.relationshipLabels[e.relationship]}</span>
         {strengths.slice(0, 2).map((s) => (
           <span key={s} className="chip chip-solid">
-            {s}
+            {t.skillLabels[s] ?? s}
           </span>
         ))}
         <span className="date">
-          {formatDate(e.resolved_at ?? e.submitted_at)}
+          {formatDate(e.resolved_at ?? e.submitted_at, locale)}
         </span>
       </div>
       <div className="foot">
@@ -40,7 +41,7 @@ export function ReviewCard({ e }: { e: PublicEndorsement }) {
           <span className="rl">
             {[e.reviewer_role, e.reviewer_company]
               .filter(Boolean)
-              .join(" · ") || "Verified reference"}
+              .join(" · ") || m.defaultRef}
           </span>
         </div>
       </div>

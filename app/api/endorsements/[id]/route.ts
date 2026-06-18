@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/session";
+import { apiMessages } from "@/lib/apimsg";
 import {
   deleteEndorsement,
   updateEndorsementBody,
@@ -18,28 +19,40 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   if (!isSameOrigin(req))
-    return NextResponse.json({ error: "Invalid request." }, { status: 403 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.invalidRequest },
+      { status: 403 },
+    );
 
   const user = await getCurrentUser();
   if (!user)
-    return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.notAuthenticated },
+      { status: 401 },
+    );
 
   const { id } = await params;
   const endorsementId = parseId(id);
   if (endorsementId === null)
-    return NextResponse.json({ error: "Invalid id." }, { status: 400 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.invalidId },
+      { status: 400 },
+    );
 
   let body: Record<string, unknown>;
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.invalidRequest },
+      { status: 400 },
+    );
   }
 
   const text = String(body.body ?? "").trim();
   if (text.length < 20 || text.length > 600)
     return NextResponse.json(
-      { error: "Endorsement must be 20–600 characters." },
+      { error: apiMessages(req).api.endorsement20to600 },
       { status: 400 },
     );
 
@@ -47,7 +60,7 @@ export async function PATCH(
   const ok = updateEndorsementBody(endorsementId, user.id, text);
   if (!ok)
     return NextResponse.json(
-      { error: "Endorsement not found." },
+      { error: apiMessages(req).api.endorsementNotFound },
       { status: 404 },
     );
 
@@ -61,21 +74,30 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   if (!isSameOrigin(req))
-    return NextResponse.json({ error: "Invalid request." }, { status: 403 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.invalidRequest },
+      { status: 403 },
+    );
 
   const user = await getCurrentUser();
   if (!user)
-    return NextResponse.json({ error: "Not authenticated." }, { status: 401 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.notAuthenticated },
+      { status: 401 },
+    );
 
   const { id } = await params;
   const endorsementId = parseId(id);
   if (endorsementId === null)
-    return NextResponse.json({ error: "Invalid id." }, { status: 400 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.invalidId },
+      { status: 400 },
+    );
 
   const ok = deleteEndorsement(endorsementId, user.id);
   if (!ok)
     return NextResponse.json(
-      { error: "Endorsement not found." },
+      { error: apiMessages(req).api.endorsementNotFound },
       { status: 404 },
     );
 

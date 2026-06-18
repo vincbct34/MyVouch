@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import crypto from "node:crypto";
+import { apiMessages } from "@/lib/apimsg";
 import { getUserBySlug, rotateEndorsementConfirmToken } from "@/lib/db";
 import { rateLimitAll, clientIp } from "@/lib/ratelimit";
 import { isSameOrigin } from "@/lib/http";
@@ -23,13 +24,19 @@ function escapeHtml(s: string): string {
  */
 export async function POST(req: Request) {
   if (!isSameOrigin(req))
-    return NextResponse.json({ error: "Invalid request." }, { status: 403 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.invalidRequest },
+      { status: 403 },
+    );
 
   let body: Record<string, unknown>;
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.invalidRequest },
+      { status: 400 },
+    );
   }
 
   const slug = String(body.slug ?? "").trim();
@@ -37,7 +44,10 @@ export async function POST(req: Request) {
     .trim()
     .toLowerCase();
   if (!slug || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(reviewer_email))
-    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+    return NextResponse.json(
+      { error: apiMessages(req).api.invalidRequest },
+      { status: 400 },
+    );
 
   const limited = rateLimitAll([
     {
@@ -53,7 +63,7 @@ export async function POST(req: Request) {
   ]);
   if (!limited.ok)
     return NextResponse.json(
-      { error: "Too many requests. Please try again later." },
+      { error: apiMessages(req).api.tooManyRequests },
       { status: 429, headers: { "Retry-After": String(limited.retryAfter) } },
     );
 
@@ -70,9 +80,12 @@ export async function POST(req: Request) {
       const link = `${appBaseUrl(req)}/confirm/${rotated}`;
       enqueueMail({
         to: reviewer_email,
-        subject: `Confirm your endorsement of ${owner.name}`,
-        text: `Here's a fresh link to confirm your endorsement of ${owner.name}:\n\n${link}\n`,
-        html: `<p>Here's a fresh link to confirm your endorsement of <strong>${escapeHtml(owner.name)}</strong>:</p><p><a href="${link}">Confirm my endorsement</a></p>`,
+        subject: apiMessages(req).email.confirmEndorsementSubject(owner.name),
+        text: apiMessages(req).email.resendEndorsementText(owner.name, link),
+        html: apiMessages(req).email.resendEndorsementHtml(
+          escapeHtml(owner.name),
+          link,
+        ),
       });
     }
   }

@@ -1,4 +1,4 @@
-import type { Relationship } from "./db";
+import type { Locale } from "./i18n";
 
 export function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -14,67 +14,11 @@ export function avatarClass(seed: string): string {
   return `a${(h % 6) + 1}`;
 }
 
-export const RELATIONSHIP_LABELS: Record<Relationship, string> = {
-  manager: "Manager",
-  peer: "Peer",
-  report: "Report",
-  client: "Client",
-  partner: "Partner",
-  mentee: "Mentee",
-};
-
-export const RELATIONSHIP_TILES: {
-  value: Relationship;
-  emoji: string;
-  title: string;
-  sub: string;
-}[] = [
-  {
-    value: "manager",
-    emoji: "🧭",
-    title: "I managed them",
-    sub: "Was their manager",
-  },
-  {
-    value: "report",
-    emoji: "📈",
-    title: "They managed me",
-    sub: "Was my manager",
-  },
-  {
-    value: "peer",
-    emoji: "🤝",
-    title: "We were peers",
-    sub: "Same team or level",
-  },
-  {
-    value: "client",
-    emoji: "💼",
-    title: "I was their client",
-    sub: "Hired their work",
-  },
-  {
-    value: "partner",
-    emoji: "🔗",
-    title: "We partnered",
-    sub: "Cross-org collaboration",
-  },
-  {
-    value: "mentee",
-    emoji: "🌱",
-    title: "They mentored me",
-    sub: "Guided my growth",
-  },
-];
-
-export const RATING_WORDS: Record<number, string> = {
-  1: "Poor",
-  2: "Fair",
-  3: "Good",
-  4: "Great",
-  5: "Outstanding",
-};
-
+/**
+ * Canonical strength keys. These are the values persisted to the DB and
+ * validated server-side, so they MUST stay stable and locale-independent —
+ * display labels are translated separately (see `skillLabels` in lib/i18n.ts).
+ */
 export const SKILL_OPTIONS = [
   "Leadership",
   "Communication",
@@ -90,9 +34,14 @@ export const SKILL_OPTIONS = [
   "Empathy",
 ];
 
-export function formatDate(iso: string): string {
+const DATE_LOCALES: Record<Locale, string> = {
+  fr: "fr-FR",
+  en: "en-US",
+};
+
+export function formatDate(iso: string, locale: Locale = "fr"): string {
   const d = new Date(iso.includes("T") ? iso : iso.replace(" ", "T") + "Z");
-  return d.toLocaleDateString("en-US", {
+  return d.toLocaleDateString(DATE_LOCALES[locale], {
     month: "short",
     day: "numeric",
     year: "numeric",

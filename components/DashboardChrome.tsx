@@ -6,8 +6,10 @@ import { useRouter } from "next/navigation";
 import { Brandmark } from "./Brandmark";
 import { Avatar } from "./Avatar";
 import { LinkIcon } from "./Icons";
+import { useT } from "./I18nProvider";
 
 export function CopyLink({ url }: { url: string }) {
+  const m = useT().chrome;
   const [copied, setCopied] = useState(false);
   async function copy() {
     try {
@@ -24,7 +26,7 @@ export function CopyLink({ url }: { url: string }) {
       <LinkIcon className="ic" />
       <code>{display}</code>
       <button className="btn btn-primary btn-sm" onClick={copy}>
-        {copied ? "Copied!" : "Copy link"}
+        {copied ? m.copied : m.copyLink}
       </button>
     </div>
   );
@@ -46,6 +48,7 @@ function MenuIcon() {
 }
 
 export function EmailVerifyBanner() {
+  const m = useT().chrome;
   const [state, setState] = useState<"idle" | "busy" | "sent" | "error">(
     "idle",
   );
@@ -62,8 +65,7 @@ export function EmailVerifyBanner() {
     <div className="wrap" style={{ marginTop: 16 }}>
       <div className="verify-banner">
         <span>
-          <strong>Confirm your email</strong> to unlock the employer-overlap
-          signal for endorsements from your work-email domain.
+          <strong>{m.verifyBannerStrong}</strong> {m.verifyBannerRest}
         </span>
         <button
           className="btn btn-primary btn-sm"
@@ -71,12 +73,12 @@ export function EmailVerifyBanner() {
           disabled={state === "busy" || state === "sent"}
         >
           {state === "sent"
-            ? "Email sent"
+            ? m.resendSent
             : state === "busy"
-              ? "Sending…"
+              ? m.resendBusy
               : state === "error"
-                ? "Try again"
-                : "Resend link"}
+                ? m.resendError
+                : m.resendIdle}
         </button>
       </div>
     </div>
@@ -84,6 +86,7 @@ export function EmailVerifyBanner() {
 }
 
 export function LogoutButton() {
+  const m = useT().chrome;
   const router = useRouter();
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -92,7 +95,7 @@ export function LogoutButton() {
   }
   return (
     <button className="btn btn-ghost btn-sm" onClick={logout}>
-      Log out
+      {m.logout}
     </button>
   );
 }
@@ -105,17 +108,18 @@ export function DashboardHeader({
     name: string;
   };
 }) {
+  const m = useT().chrome;
   return (
     <header className="admin-head">
       <div className="wrap bar admin-shell">
         <div className="center admin-brand">
           <Brandmark onDark href="/dashboard" />
-          <span className="badge">Admin</span>
+          <span className="badge">{m.adminBadge}</span>
         </div>
 
         <div className="center admin-actions">
           <Link href={`/u/${user.slug}`} className="btn btn-ghost btn-sm">
-            View public profile
+            {m.viewPublic}
           </Link>
           <LogoutButton />
           <Avatar name={user.name} size="sm" />
@@ -123,12 +127,12 @@ export function DashboardHeader({
 
         <details className="admin-menu">
           <summary className="btn btn-ghost btn-sm admin-menu-trigger">
-            Menu
+            {m.menu}
             <MenuIcon />
           </summary>
           <div className="admin-menu-panel">
             <Link href={`/u/${user.slug}`} className="btn btn-ghost btn-sm">
-              View public profile
+              {m.viewPublic}
             </Link>
             <LogoutButton />
             <div className="admin-menu-user">

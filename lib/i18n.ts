@@ -1,0 +1,929 @@
+import type { Relationship } from "./db";
+
+/**
+ * Dependency-free i18n. This module holds the message catalogs for every
+ * locale and stays free of any `next/*` import so it can be shared by both
+ * server and client components (and unit-tested in plain Node, like lib/auth).
+ *
+ * Client components must NOT receive the resolved catalog as a prop — it holds
+ * functions, which aren't serializable across the RSC boundary. Instead the
+ * client reads the active `Locale` (a plain string) from context and indexes
+ * `messages` itself. Server components call `getLocale()` (lib/locale.ts) and
+ * index `messages` directly.
+ *
+ * `Messages = typeof messages.en` makes the type checker enforce that every
+ * locale defines the exact same keys — so "is every text available in both
+ * languages?" is answered by the build, not by hope.
+ */
+
+export type Locale = "fr" | "en";
+export const LOCALES: Locale[] = ["fr", "en"];
+export const DEFAULT_LOCALE: Locale = "fr";
+export const LOCALE_COOKIE = "locale";
+
+export function isLocale(v: unknown): v is Locale {
+  return v === "fr" || v === "en";
+}
+
+/** Parse the active locale out of a raw Cookie header (for API routes). */
+export function localeFromCookieHeader(header: string | null): Locale {
+  if (!header) return DEFAULT_LOCALE;
+  for (const part of header.split(";")) {
+    const [k, ...rest] = part.trim().split("=");
+    if (k === LOCALE_COOKIE) {
+      const v = rest.join("=");
+      return isLocale(v) ? v : DEFAULT_LOCALE;
+    }
+  }
+  return DEFAULT_LOCALE;
+}
+
+const en = {
+  nav: {
+    logIn: "Log in",
+    getWall: "Get your wall",
+    dashboardAria: "Your dashboard",
+  },
+  switcher: { aria: "Change language" },
+  landing: {
+    kicker: "Verified endorsements",
+    title: "References people actually trust.",
+    lede: "MyVouch turns scattered word-of-mouth into a verified wall of endorsements you own. Every reference is checked for a real work email, a shared employer, and a matched identity — so your reputation speaks for itself.",
+    goDashboard: "Go to your dashboard",
+    viewWall: "View your wall",
+    buildFree: "Build your wall — free",
+    logIn: "Log in",
+    f1Title: "Share one link",
+    f1Body:
+      "Send your personal MyVouch link to managers, peers, and clients. A guided form makes leaving a thoughtful endorsement take two minutes.",
+    f2Title: "Verified, not vibes",
+    f2Body:
+      "Each endorsement carries verification signals — work email confirmed, employer overlap, identity matched — so readers know it’s real.",
+    f3Title: "You stay in control",
+    f3Body:
+      "Nothing goes public until you approve it. Moderate your queue, request edits, or decline — your wall, your call.",
+  },
+  footer: { tagline: "Verified endorsements" },
+  layout: {
+    titleDefault: "MyVouch — Verified endorsements",
+    description:
+      "Collect, verify, and publish trusted references. MyVouch turns word-of-mouth into a verified endorsement wall you own.",
+  },
+  login: {
+    title: "Welcome back",
+    sub: "Log in to moderate your endorsement wall.",
+    email: "Email",
+    password: "Password",
+    submit: "Log in",
+    submitting: "Logging in…",
+    footPre: "New to MyVouch? ",
+    footLink: "Create your wall",
+    generic: "Something went wrong.",
+  },
+  signup: {
+    title: "Build your wall",
+    sub: "Start collecting verified endorsements in minutes.",
+    name: "Full name",
+    headline: "Headline",
+    headlinePlaceholder: "Product Designer · ex-Stripe",
+    headlineHint: "Shown under your name on your wall.",
+    location: "Location",
+    locationPlaceholder: "Paris, France",
+    email: "Work email",
+    password: "Password",
+    passwordHint: "At least 8 characters.",
+    submit: "Create my wall",
+    submitting: "Creating…",
+    footPre: "Already have an account? ",
+    footLink: "Log in",
+    generic: "Something went wrong.",
+  },
+  notFound: {
+    title: "Not found",
+    sub: "This page or profile doesn’t exist.",
+    back: "Back home",
+  },
+  error: {
+    title: "Something went wrong",
+    sub: "An unexpected error occurred. Try again, or head back home.",
+    retry: "Try again",
+    back: "Back home",
+  },
+  dashboard: { metaTitle: "Moderation queue" },
+  profile: {
+    metaNotFound: "Profile not found",
+    metaTitle: (name: string) => `${name} — verified endorsements`,
+    metaDesc: (name: string) => `Verified endorsements for ${name} on MyVouch.`,
+    badgeEmailVerified: (count: number) => `${count} email-verified`,
+    openToWork: "Open to work",
+    statPublished: "Published reviews",
+    statAvg: "Avg rating",
+    statRecommend: "Would recommend",
+    addEndorsement: "Add your endorsement",
+    emptyWall: (firstName: string) =>
+      `${firstName} hasn’t published any endorsements yet. Be the first to vouch.`,
+    writeEndorsement: "Write an endorsement",
+    ctaTitle: (firstName: string) => `Worked with ${firstName}?`,
+    ctaBody:
+      "Add a verified endorsement — it takes about two minutes and helps their reputation travel.",
+  },
+  vouch: {
+    metaTitle: (name: string) => `MyVouch for ${name}`,
+    metaTitleNone: "Submit endorsement",
+    viewWall: "View wall",
+    forPill: (name: string) => `You’re vouching for ${name}`,
+    title: (firstName: string) => `You’re vouching for ${firstName}`,
+    copy: (firstName: string) =>
+      `A good endorsement is specific and honest. ${firstName} reviews every submission before anything goes public.`,
+  },
+  og: {
+    alt: "Verified endorsements on MyVouch",
+    headlineFallback: "Verified endorsements",
+    statEndorsements: "Endorsements",
+    statAvg: "Avg rating",
+    statEmailVerified: "Email-verified",
+  },
+  confirmMeta: "Confirm your endorsement",
+  confirmEmailMeta: "Confirm your email",
+  manageMeta: "Manage your endorsement",
+  chrome: {
+    copyLink: "Copy link",
+    copied: "Copied!",
+    verifyBannerStrong: "Confirm your email",
+    verifyBannerRest:
+      "to unlock the employer-overlap signal for endorsements from your work-email domain.",
+    resendSent: "Email sent",
+    resendBusy: "Sending…",
+    resendError: "Try again",
+    resendIdle: "Resend link",
+    logout: "Log out",
+    viewPublic: "View public profile",
+    menu: "Menu",
+    adminBadge: "Admin",
+  },
+  wall: {
+    filterAll: "All",
+    sortedByPre: "Sorted by ",
+    sortedByValue: "Most recent",
+    emptyView: "No endorsements in this view yet.",
+    loadMore: "Load more endorsements",
+    loading: "Loading…",
+  },
+  review: {
+    verifiedTitle: "Reviewer confirmed their work email",
+    verifiedChip: "Verified",
+    defaultRef: "Verified reference",
+  },
+  stars: { aria: (value: number) => `${value} out of 5` },
+  submit: {
+    errRel: "Tell us how you worked together.",
+    errRating: "Add an overall rating.",
+    errShort: "Your endorsement is a little short — add a bit more.",
+    generic: "Something went wrong.",
+    successTitle: "Thank you — it’s on its way",
+    successBody: (firstName: string) =>
+      `Your endorsement has been sent to ${firstName} for review. It stays private until they approve it — then it appears on their public wall.`,
+    viewWall: (firstName: string) => `View ${firstName}’s wall`,
+    step1: "Who are you?",
+    name: "Full name",
+    email: "Work email",
+    role: "Your role",
+    rolePlaceholder: "Engineering Manager",
+    company: "Company",
+    companyPlaceholder: "Acme Inc.",
+    linkedin: "LinkedIn profile",
+    optional: "(optional)",
+    step2: "How did you work together?",
+    step3: (firstName: string) => `Overall, how was working with ${firstName}?`,
+    starAria: (i: number) => `${i} star`,
+    step4: "Your endorsement",
+    bodyPlaceholder: (firstName: string) =>
+      `What made ${firstName} great to work with? Be specific — a story or result is worth more than adjectives.`,
+    step5: "Strengths",
+    trust: (firstName: string) =>
+      `Verified and held privately until ${firstName} approves it.`,
+    submit: "Submit endorsement",
+    submitting: "Sending…",
+  },
+  queue: {
+    tabPending: "Pending",
+    tabApproved: "Published",
+    tabDeclined: "Declined",
+    tabAll: "All",
+    saveErr: "Couldn’t save — try again.",
+    toastApproved: "Published to your public wall",
+    toastDeclined: "Declined — hidden from your wall",
+    deleteErr: "Couldn’t delete — try again.",
+    toastDeleted: "Endorsement deleted",
+    toastUpdated: "Endorsement updated",
+    toastLinkedinOn: "Marked LinkedIn as matched",
+    toastLinkedinOff: "Removed LinkedIn match",
+    title: "Moderation queue",
+    subtitle:
+      "Review incoming endorsements before they reach your public wall.",
+    kpiPending: "Awaiting review",
+    kpiPublished: "Published",
+    kpiAvg: "Avg published rating",
+    kpiDeclined: "Declined",
+    searchPlaceholder: "Search endorsements",
+    emptyTitle: "You’re all caught up",
+    emptyBody: "Nothing to review in this view.",
+    defaultReviewer: "Reviewer",
+    badgePublished: "Published",
+    badgeDeclined: "Declined",
+    badgeNeedsAttention: "Needs attention",
+    badgePending: "Pending review",
+    save: "Save",
+    cancel: "Cancel",
+    submitted: (date: string) => `Submitted ${date}`,
+    signalEmailOk: "Work email confirmed",
+    signalEmailWait: "Email confirmation pending",
+    signalDomainOk: "Same work-email domain as you",
+    signalDomainWait: "Different email domain",
+    signalLinkedinOk: "LinkedIn identity matched",
+    signalLinkedinWait: "LinkedIn not matched",
+    openLinkedin: "Open LinkedIn",
+    unmarkLinkedin: "Unmark LinkedIn match",
+    markLinkedin: "Mark LinkedIn match",
+    closeEditor: "Close editor",
+    editText: "Edit text",
+    confirmDelete: "Confirm delete",
+    delete: "Delete",
+    approvePublish: "Approve & publish",
+    decline: "Decline",
+    liveNote: "Live on your public profile",
+    unpublish: "Unpublish",
+    hiddenNote: "Hidden — not shown publicly",
+    publish: "Publish",
+  },
+  security: {
+    pwMismatch: "New passwords don’t match.",
+    pwChangeFail: "Couldn’t change password.",
+    pwChanged: "Password changed. Other devices have been signed out.",
+    logoutFail: "Couldn’t sign out. Try again.",
+    summary: "Security",
+    current: "Current password",
+    new: "New password",
+    confirm: "Confirm new password",
+    save: "Change password",
+    saving: "Saving…",
+    logoutAll: "Log out everywhere",
+    loggingOut: "Signing out…",
+    logoutAllHint: "Signs out this and all other devices.",
+  },
+  settings: {
+    saved: "Saved.",
+    saveFail: "Couldn’t save.",
+    summary: "Edit profile",
+    headline: "Headline",
+    headlinePlaceholder: "Senior Product Designer · ex-Figma",
+    location: "Location",
+    locationPlaceholder: "Lisbon, Portugal",
+    linkedin: "LinkedIn URL",
+    openToWork: "Open to work",
+    save: "Save changes",
+    saving: "Saving…",
+  },
+  confirmAction: {
+    generic: "Something went wrong.",
+    network: "Network error. Please try again.",
+    doneTitle: "Email confirmed",
+    doneBody:
+      "Thanks — your work email is verified. The profile owner will see your endorsement marked as confirmed when they review it.",
+    viewWall: "View the wall",
+    resentTitle: "Check your inbox",
+    resentBody:
+      "If you have a pending endorsement, a fresh confirmation link is on its way. It may take a minute to arrive.",
+    expiredTitle: "Link expired",
+    expiredBody:
+      "This confirmation link has expired. Enter the email you submitted with and we’ll send a fresh one.",
+    emailPlaceholder: "you@company.com",
+    sendNew: "Send a new link",
+    title: "Confirm your endorsement",
+    body: "Click below to confirm your work email and verify the endorsement you submitted.",
+    confirm: "Confirm my email",
+    confirming: "Confirming…",
+  },
+  manage: {
+    generic: "Something went wrong.",
+    network: "Network error. Please try again.",
+    doneTitle: "Endorsement withdrawn",
+    doneBody: (ownerName: string) =>
+      `Your endorsement of ${ownerName} has been removed. It will no longer appear anywhere on MyVouch.`,
+    title: "Manage your endorsement",
+    descPre: "You wrote an endorsement of ",
+    descPost: (reviewerName: string) =>
+      ` as ${reviewerName}. You can withdraw it at any time — this permanently deletes it.`,
+    confirmYes: "Yes, withdraw it",
+    keep: "Keep it",
+    withdraw: "Withdraw my endorsement",
+    viewWall: (ownerName: string) => `View ${ownerName}’s wall`,
+  },
+  emailConfirm: {
+    generic: "Something went wrong.",
+    network: "Network error. Please try again.",
+    doneTitle: "Email confirmed",
+    doneBody:
+      "Your email is verified. Endorsements from the same work-email domain can now earn the employer-overlap signal.",
+    dashboard: "Go to dashboard",
+    title: "Confirm your email",
+    body: "Click below to confirm the email on your MyVouch account.",
+    confirm: "Confirm my email",
+    confirming: "Confirming…",
+  },
+  audit: {
+    summary: (count: number) => `Account activity (${count})`,
+    empty: "No recorded activity yet.",
+    approved: "Published an endorsement",
+    declined: "Declined an endorsement",
+    edit: "Edited an endorsement",
+    delete: "Deleted an endorsement",
+    passwordChange: "Changed password",
+    logoutAll: "Signed out everywhere",
+  },
+  relationshipLabels: {
+    manager: "Manager",
+    peer: "Peer",
+    report: "Report",
+    client: "Client",
+    partner: "Partner",
+    mentee: "Mentee",
+  } as Record<Relationship, string>,
+  relationshipTiles: [
+    {
+      value: "manager",
+      emoji: "🧭",
+      title: "I managed them",
+      sub: "Was their manager",
+    },
+    {
+      value: "report",
+      emoji: "📈",
+      title: "They managed me",
+      sub: "Was my manager",
+    },
+    {
+      value: "peer",
+      emoji: "🤝",
+      title: "We were peers",
+      sub: "Same team or level",
+    },
+    {
+      value: "client",
+      emoji: "💼",
+      title: "I was their client",
+      sub: "Hired their work",
+    },
+    {
+      value: "partner",
+      emoji: "🔗",
+      title: "We partnered",
+      sub: "Cross-org collaboration",
+    },
+    {
+      value: "mentee",
+      emoji: "🌱",
+      title: "They mentored me",
+      sub: "Guided my growth",
+    },
+  ] as { value: Relationship; emoji: string; title: string; sub: string }[],
+  ratingWords: {
+    1: "Poor",
+    2: "Fair",
+    3: "Good",
+    4: "Great",
+    5: "Outstanding",
+  } as Record<number, string>,
+  skillLabels: {
+    Leadership: "Leadership",
+    Communication: "Communication",
+    Strategy: "Strategy",
+    Execution: "Execution",
+    Mentorship: "Mentorship",
+    "Technical depth": "Technical depth",
+    Reliability: "Reliability",
+    Creativity: "Creativity",
+    Collaboration: "Collaboration",
+    Ownership: "Ownership",
+    "Problem solving": "Problem solving",
+    Empathy: "Empathy",
+  } as Record<string, string>,
+  api: {
+    invalidRequest: "Invalid request.",
+    notSignedIn: "Not signed in.",
+    notAuthenticated: "Not authenticated.",
+    tooManyRequests: "Too many requests. Please try again later.",
+    tooManyAttempts: "Too many attempts. Please try again later.",
+    tooManySubmissions: "Too many submissions. Please try again later.",
+    tooManySignups: "Too many signups. Please try again later.",
+    confirmJustSent: "A confirmation email was just sent. Check your inbox.",
+    invalidLink: "Invalid link.",
+    invalidId: "Invalid id.",
+    invalidStatus: "Invalid status.",
+    endorsementNotFound: "Endorsement not found.",
+    linkUsed: "This link is invalid or has already been used.",
+    endorsement20to600: "Endorsement must be 20–600 characters.",
+    newPwMin: "New password must be at least 8 characters.",
+    newPwMax: "New password must be 256 characters or fewer.",
+    currentPwWrong: "Current password is incorrect.",
+    newPwDifferent: "New password must be different from the current one.",
+    headlineLong: "Headline is too long.",
+    locationLong: "Location is too long.",
+    linkedinLong: "LinkedIn URL is too long.",
+    linkedinScheme: "LinkedIn URL must start with http(s)://.",
+    profileNotFound: "Profile not found.",
+    enterName: "Enter your name.",
+    nameLong: "Name is too long.",
+    enterEmail: "Enter a valid email.",
+    emailLong: "Email is too long.",
+    roleLong: "Role is too long.",
+    companyLong: "Company is too long.",
+    chooseRelationship: "Choose how you worked together.",
+    addRating: "Add a rating.",
+    pleaseEnterName: "Please enter your name.",
+    pwMin: "Password must be at least 8 characters.",
+    pwMax: "Password must be 256 characters or fewer.",
+    accountExists: "An account with this email already exists.",
+    confirmExpired: "This confirmation link has expired.",
+    incorrectCredentials: "Incorrect email or password.",
+    linkedinBool: "linkedin_matched must be a boolean.",
+    emailLinkExpired:
+      "This link has expired. Sign in and resend it from your dashboard.",
+    duplicatePending:
+      "You already have an endorsement awaiting review for this profile. Check your email to confirm it.",
+  },
+  email: {
+    confirmEndorsementSubject: (name: string) =>
+      `Confirm your endorsement of ${name}`,
+    confirmEndorsementText: (name: string, link: string, manageLink: string) =>
+      `Thanks for vouching for ${name}. Confirm your work email to verify your endorsement:\n\n${link}\n\nChanged your mind or didn't write this? Withdraw it here:\n${manageLink}`,
+    confirmEndorsementHtml: (name: string, link: string, manageLink: string) =>
+      `<p>Thanks for vouching for <strong>${name}</strong>.</p><p>Confirm your work email to verify your endorsement:</p><p><a href="${link}">Confirm my endorsement</a></p><p style="color:#666">Changed your mind or didn't write this? <a href="${manageLink}">Withdraw it here</a>.</p>`,
+    resendEndorsementText: (name: string, link: string) =>
+      `Here's a fresh link to confirm your endorsement of ${name}:\n\n${link}\n`,
+    resendEndorsementHtml: (name: string, link: string) =>
+      `<p>Here's a fresh link to confirm your endorsement of <strong>${name}</strong>:</p><p><a href="${link}">Confirm my endorsement</a></p>`,
+    ownerSubject: "Confirm your email for MyVouch",
+    signupText: (link: string) =>
+      `Welcome to MyVouch. Confirm your email to unlock verified endorsement signals:\n\n${link}\n`,
+    signupHtml: (link: string) =>
+      `<p>Welcome to MyVouch.</p><p>Confirm your email to unlock verified endorsement signals:</p><p><a href="${link}">Confirm my email</a></p>`,
+    ownerResendText: (link: string) =>
+      `Confirm your email to unlock verified endorsement signals:\n\n${link}\n`,
+    ownerResendHtml: (link: string) =>
+      `<p>Confirm your email to unlock verified endorsement signals:</p><p><a href="${link}">Confirm my email</a></p>`,
+  },
+};
+
+export type Messages = typeof en;
+
+const fr: Messages = {
+  nav: {
+    logIn: "Se connecter",
+    getWall: "Créer mon mur",
+    dashboardAria: "Votre tableau de bord",
+  },
+  switcher: { aria: "Changer de langue" },
+  landing: {
+    kicker: "Recommandations vérifiées",
+    title: "Des références auxquelles on fait vraiment confiance.",
+    lede: "MyVouch transforme le bouche-à-oreille dispersé en un mur de recommandations vérifiées qui vous appartient. Chaque référence est contrôlée : adresse professionnelle réelle, employeur commun et identité confirmée — pour que votre réputation parle d’elle-même.",
+    goDashboard: "Accéder à votre tableau de bord",
+    viewWall: "Voir votre mur",
+    buildFree: "Créez votre mur — gratuit",
+    logIn: "Se connecter",
+    f1Title: "Partagez un seul lien",
+    f1Body:
+      "Envoyez votre lien MyVouch personnel à vos managers, collègues et clients. Un formulaire guidé permet de laisser une recommandation soignée en deux minutes.",
+    f2Title: "Vérifié, pas du vent",
+    f2Body:
+      "Chaque recommandation porte des signaux de vérification — adresse professionnelle confirmée, employeur commun, identité confirmée — pour que vos lecteurs sachent qu’elle est réelle.",
+    f3Title: "Vous gardez le contrôle",
+    f3Body:
+      "Rien n’est publié tant que vous ne l’approuvez pas. Modérez votre file, demandez des modifications ou refusez — votre mur, votre décision.",
+  },
+  footer: { tagline: "Recommandations vérifiées" },
+  layout: {
+    titleDefault: "MyVouch — Recommandations vérifiées",
+    description:
+      "Collectez, vérifiez et publiez des références de confiance. MyVouch transforme le bouche-à-oreille en un mur de recommandations vérifiées qui vous appartient.",
+  },
+  login: {
+    title: "Bon retour",
+    sub: "Connectez-vous pour modérer votre mur de recommandations.",
+    email: "E-mail",
+    password: "Mot de passe",
+    submit: "Se connecter",
+    submitting: "Connexion…",
+    footPre: "Nouveau sur MyVouch ? ",
+    footLink: "Créez votre mur",
+    generic: "Une erreur s’est produite.",
+  },
+  signup: {
+    title: "Créez votre mur",
+    sub: "Commencez à collecter des recommandations vérifiées en quelques minutes.",
+    name: "Nom complet",
+    headline: "Titre",
+    headlinePlaceholder: "Product Designer · ex-Stripe",
+    headlineHint: "Affiché sous votre nom sur votre mur.",
+    location: "Localisation",
+    locationPlaceholder: "Paris, France",
+    email: "E-mail professionnel",
+    password: "Mot de passe",
+    passwordHint: "Au moins 8 caractères.",
+    submit: "Créer mon mur",
+    submitting: "Création…",
+    footPre: "Vous avez déjà un compte ? ",
+    footLink: "Se connecter",
+    generic: "Une erreur s’est produite.",
+  },
+  notFound: {
+    title: "Introuvable",
+    sub: "Cette page ou ce profil n’existe pas.",
+    back: "Retour à l’accueil",
+  },
+  error: {
+    title: "Une erreur s’est produite",
+    sub: "Une erreur inattendue est survenue. Réessayez, ou revenez à l’accueil.",
+    retry: "Réessayer",
+    back: "Retour à l’accueil",
+  },
+  dashboard: { metaTitle: "File de modération" },
+  profile: {
+    metaNotFound: "Profil introuvable",
+    metaTitle: (name: string) => `${name} — recommandations vérifiées`,
+    metaDesc: (name: string) =>
+      `Recommandations vérifiées pour ${name} sur MyVouch.`,
+    badgeEmailVerified: (count: number) =>
+      `${count} e-mail vérifié${count > 1 ? "s" : ""}`,
+    openToWork: "Ouvert aux opportunités",
+    statPublished: "Avis publiés",
+    statAvg: "Note moyenne",
+    statRecommend: "Recommanderaient",
+    addEndorsement: "Ajouter votre recommandation",
+    emptyWall: (firstName: string) =>
+      `${firstName} n’a encore publié aucune recommandation. Soyez le premier à recommander.`,
+    writeEndorsement: "Rédiger une recommandation",
+    ctaTitle: (firstName: string) => `Vous avez travaillé avec ${firstName} ?`,
+    ctaBody:
+      "Ajoutez une recommandation vérifiée — cela prend environ deux minutes et aide sa réputation à voyager.",
+  },
+  vouch: {
+    metaTitle: (name: string) => `MyVouch pour ${name}`,
+    metaTitleNone: "Soumettre une recommandation",
+    viewWall: "Voir le mur",
+    forPill: (name: string) => `Vous recommandez ${name}`,
+    title: (firstName: string) => `Vous recommandez ${firstName}`,
+    copy: (firstName: string) =>
+      `Une bonne recommandation est précise et honnête. ${firstName} examine chaque soumission avant toute publication.`,
+  },
+  og: {
+    alt: "Recommandations vérifiées sur MyVouch",
+    headlineFallback: "Recommandations vérifiées",
+    statEndorsements: "Recommandations",
+    statAvg: "Note moyenne",
+    statEmailVerified: "E-mails vérifiés",
+  },
+  confirmMeta: "Confirmez votre recommandation",
+  confirmEmailMeta: "Confirmez votre e-mail",
+  manageMeta: "Gérez votre recommandation",
+  chrome: {
+    copyLink: "Copier le lien",
+    copied: "Copié !",
+    verifyBannerStrong: "Confirmez votre e-mail",
+    verifyBannerRest:
+      "pour débloquer le signal d’employeur commun pour les recommandations provenant de votre domaine professionnel.",
+    resendSent: "E-mail envoyé",
+    resendBusy: "Envoi…",
+    resendError: "Réessayer",
+    resendIdle: "Renvoyer le lien",
+    logout: "Se déconnecter",
+    viewPublic: "Voir le profil public",
+    menu: "Menu",
+    adminBadge: "Admin",
+  },
+  wall: {
+    filterAll: "Tous",
+    sortedByPre: "Trié par ",
+    sortedByValue: "Plus récent",
+    emptyView: "Aucune recommandation dans cette vue pour le moment.",
+    loadMore: "Voir plus de recommandations",
+    loading: "Chargement…",
+  },
+  review: {
+    verifiedTitle: "Le référent a confirmé son adresse professionnelle",
+    verifiedChip: "Vérifié",
+    defaultRef: "Référence vérifiée",
+  },
+  stars: { aria: (value: number) => `${value} sur 5` },
+  submit: {
+    errRel: "Indiquez comment vous avez travaillé ensemble.",
+    errRating: "Ajoutez une note globale.",
+    errShort: "Votre recommandation est un peu courte — développez un peu.",
+    generic: "Une erreur s’est produite.",
+    successTitle: "Merci — c’est en route",
+    successBody: (firstName: string) =>
+      `Votre recommandation a été envoyée à ${firstName} pour examen. Elle reste privée jusqu’à son approbation — elle apparaît alors sur son mur public.`,
+    viewWall: (firstName: string) => `Voir le mur de ${firstName}`,
+    step1: "Qui êtes-vous ?",
+    name: "Nom complet",
+    email: "E-mail professionnel",
+    role: "Votre poste",
+    rolePlaceholder: "Responsable ingénierie",
+    company: "Entreprise",
+    companyPlaceholder: "Acme Inc.",
+    linkedin: "Profil LinkedIn",
+    optional: "(facultatif)",
+    step2: "Comment avez-vous travaillé ensemble ?",
+    step3: (firstName: string) =>
+      `Globalement, comment était-ce de travailler avec ${firstName} ?`,
+    starAria: (i: number) => `${i} étoile${i > 1 ? "s" : ""}`,
+    step4: "Votre recommandation",
+    bodyPlaceholder: (firstName: string) =>
+      `Qu’est-ce qui rendait ${firstName} agréable à côtoyer au travail ? Soyez précis — une anecdote ou un résultat vaut mieux que des adjectifs.`,
+    step5: "Points forts",
+    trust: (firstName: string) =>
+      `Vérifié et gardé privé jusqu’à ce que ${firstName} l’approuve.`,
+    submit: "Envoyer la recommandation",
+    submitting: "Envoi…",
+  },
+  queue: {
+    tabPending: "En attente",
+    tabApproved: "Publiées",
+    tabDeclined: "Refusées",
+    tabAll: "Toutes",
+    saveErr: "Échec de l’enregistrement — réessayez.",
+    toastApproved: "Publiée sur votre mur public",
+    toastDeclined: "Refusée — masquée de votre mur",
+    deleteErr: "Échec de la suppression — réessayez.",
+    toastDeleted: "Recommandation supprimée",
+    toastUpdated: "Recommandation mise à jour",
+    toastLinkedinOn: "LinkedIn marqué comme confirmé",
+    toastLinkedinOff: "Correspondance LinkedIn retirée",
+    title: "File de modération",
+    subtitle:
+      "Examinez les recommandations entrantes avant qu’elles n’atteignent votre mur public.",
+    kpiPending: "En attente d’examen",
+    kpiPublished: "Publiées",
+    kpiAvg: "Note moyenne publiée",
+    kpiDeclined: "Refusées",
+    searchPlaceholder: "Rechercher des recommandations",
+    emptyTitle: "Vous êtes à jour",
+    emptyBody: "Rien à examiner dans cette vue.",
+    defaultReviewer: "Référent",
+    badgePublished: "Publiée",
+    badgeDeclined: "Refusée",
+    badgeNeedsAttention: "À vérifier",
+    badgePending: "En attente d’examen",
+    save: "Enregistrer",
+    cancel: "Annuler",
+    submitted: (date: string) => `Soumise le ${date}`,
+    signalEmailOk: "Adresse professionnelle confirmée",
+    signalEmailWait: "Confirmation d’e-mail en attente",
+    signalDomainOk: "Même domaine professionnel que vous",
+    signalDomainWait: "Domaine d’e-mail différent",
+    signalLinkedinOk: "Identité LinkedIn confirmée",
+    signalLinkedinWait: "LinkedIn non confirmé",
+    openLinkedin: "Ouvrir LinkedIn",
+    unmarkLinkedin: "Retirer la correspondance LinkedIn",
+    markLinkedin: "Marquer la correspondance LinkedIn",
+    closeEditor: "Fermer l’éditeur",
+    editText: "Modifier le texte",
+    confirmDelete: "Confirmer la suppression",
+    delete: "Supprimer",
+    approvePublish: "Approuver & publier",
+    decline: "Refuser",
+    liveNote: "En ligne sur votre profil public",
+    unpublish: "Dépublier",
+    hiddenNote: "Masquée — non visible publiquement",
+    publish: "Publier",
+  },
+  security: {
+    pwMismatch: "Les nouveaux mots de passe ne correspondent pas.",
+    pwChangeFail: "Impossible de changer le mot de passe.",
+    pwChanged:
+      "Mot de passe modifié. Les autres appareils ont été déconnectés.",
+    logoutFail: "Échec de la déconnexion. Réessayez.",
+    summary: "Sécurité",
+    current: "Mot de passe actuel",
+    new: "Nouveau mot de passe",
+    confirm: "Confirmer le nouveau mot de passe",
+    save: "Changer le mot de passe",
+    saving: "Enregistrement…",
+    logoutAll: "Se déconnecter partout",
+    loggingOut: "Déconnexion…",
+    logoutAllHint: "Déconnecte cet appareil et tous les autres.",
+  },
+  settings: {
+    saved: "Enregistré.",
+    saveFail: "Échec de l’enregistrement.",
+    summary: "Modifier le profil",
+    headline: "Titre",
+    headlinePlaceholder: "Senior Product Designer · ex-Figma",
+    location: "Localisation",
+    locationPlaceholder: "Lisbonne, Portugal",
+    linkedin: "URL LinkedIn",
+    openToWork: "Ouvert aux opportunités",
+    save: "Enregistrer les modifications",
+    saving: "Enregistrement…",
+  },
+  confirmAction: {
+    generic: "Une erreur s’est produite.",
+    network: "Erreur réseau. Veuillez réessayer.",
+    doneTitle: "E-mail confirmé",
+    doneBody:
+      "Merci — votre adresse professionnelle est vérifiée. Le propriétaire du profil verra votre recommandation marquée comme confirmée lors de son examen.",
+    viewWall: "Voir le mur",
+    resentTitle: "Vérifiez votre boîte de réception",
+    resentBody:
+      "Si vous avez une recommandation en attente, un nouveau lien de confirmation est en route. Il peut prendre une minute à arriver.",
+    expiredTitle: "Lien expiré",
+    expiredBody:
+      "Ce lien de confirmation a expiré. Saisissez l’e-mail utilisé lors de votre soumission et nous vous en enverrons un nouveau.",
+    emailPlaceholder: "vous@entreprise.com",
+    sendNew: "Envoyer un nouveau lien",
+    title: "Confirmez votre recommandation",
+    body: "Cliquez ci-dessous pour confirmer votre adresse professionnelle et vérifier la recommandation que vous avez soumise.",
+    confirm: "Confirmer mon e-mail",
+    confirming: "Confirmation…",
+  },
+  manage: {
+    generic: "Une erreur s’est produite.",
+    network: "Erreur réseau. Veuillez réessayer.",
+    doneTitle: "Recommandation retirée",
+    doneBody: (ownerName: string) =>
+      `Votre recommandation de ${ownerName} a été supprimée. Elle n’apparaîtra plus nulle part sur MyVouch.`,
+    title: "Gérez votre recommandation",
+    descPre: "Vous avez rédigé une recommandation de ",
+    descPost: (reviewerName: string) =>
+      ` en tant que ${reviewerName}. Vous pouvez la retirer à tout moment — cela la supprime définitivement.`,
+    confirmYes: "Oui, la retirer",
+    keep: "La conserver",
+    withdraw: "Retirer ma recommandation",
+    viewWall: (ownerName: string) => `Voir le mur de ${ownerName}`,
+  },
+  emailConfirm: {
+    generic: "Une erreur s’est produite.",
+    network: "Erreur réseau. Veuillez réessayer.",
+    doneTitle: "E-mail confirmé",
+    doneBody:
+      "Votre e-mail est vérifié. Les recommandations provenant du même domaine professionnel peuvent désormais obtenir le signal d’employeur commun.",
+    dashboard: "Accéder au tableau de bord",
+    title: "Confirmez votre e-mail",
+    body: "Cliquez ci-dessous pour confirmer l’e-mail de votre compte MyVouch.",
+    confirm: "Confirmer mon e-mail",
+    confirming: "Confirmation…",
+  },
+  audit: {
+    summary: (count: number) => `Activité du compte (${count})`,
+    empty: "Aucune activité enregistrée pour le moment.",
+    approved: "Recommandation publiée",
+    declined: "Recommandation refusée",
+    edit: "Recommandation modifiée",
+    delete: "Recommandation supprimée",
+    passwordChange: "Mot de passe modifié",
+    logoutAll: "Déconnexion partout",
+  },
+  relationshipLabels: {
+    manager: "Manager",
+    peer: "Collègue",
+    report: "Collaborateur",
+    client: "Client",
+    partner: "Partenaire",
+    mentee: "Mentoré",
+  },
+  relationshipTiles: [
+    {
+      value: "manager",
+      emoji: "🧭",
+      title: "Je l’ai managé",
+      sub: "J’étais son manager",
+    },
+    {
+      value: "report",
+      emoji: "📈",
+      title: "Il m’a managé",
+      sub: "Était mon manager",
+    },
+    {
+      value: "peer",
+      emoji: "🤝",
+      title: "Nous étions collègues",
+      sub: "Même équipe ou niveau",
+    },
+    {
+      value: "client",
+      emoji: "💼",
+      title: "J’étais son client",
+      sub: "J’ai fait appel à ses services",
+    },
+    {
+      value: "partner",
+      emoji: "🔗",
+      title: "Nous étions partenaires",
+      sub: "Collaboration inter-organisations",
+    },
+    {
+      value: "mentee",
+      emoji: "🌱",
+      title: "Il m’a accompagné",
+      sub: "A guidé mon évolution",
+    },
+  ],
+  ratingWords: {
+    1: "Médiocre",
+    2: "Passable",
+    3: "Bien",
+    4: "Très bien",
+    5: "Exceptionnel",
+  },
+  skillLabels: {
+    Leadership: "Leadership",
+    Communication: "Communication",
+    Strategy: "Stratégie",
+    Execution: "Exécution",
+    Mentorship: "Mentorat",
+    "Technical depth": "Expertise technique",
+    Reliability: "Fiabilité",
+    Creativity: "Créativité",
+    Collaboration: "Collaboration",
+    Ownership: "Sens des responsabilités",
+    "Problem solving": "Résolution de problèmes",
+    Empathy: "Empathie",
+  },
+  api: {
+    invalidRequest: "Requête invalide.",
+    notSignedIn: "Non connecté.",
+    notAuthenticated: "Non authentifié.",
+    tooManyRequests: "Trop de requêtes. Veuillez réessayer plus tard.",
+    tooManyAttempts: "Trop de tentatives. Veuillez réessayer plus tard.",
+    tooManySubmissions: "Trop de soumissions. Veuillez réessayer plus tard.",
+    tooManySignups: "Trop d'inscriptions. Veuillez réessayer plus tard.",
+    confirmJustSent:
+      "Un e-mail de confirmation vient d'être envoyé. Vérifiez votre boîte de réception.",
+    invalidLink: "Lien invalide.",
+    invalidId: "Identifiant invalide.",
+    invalidStatus: "Statut invalide.",
+    endorsementNotFound: "Recommandation introuvable.",
+    linkUsed: "Ce lien est invalide ou a déjà été utilisé.",
+    endorsement20to600:
+      "La recommandation doit comporter entre 20 et 600 caractères.",
+    newPwMin: "Le nouveau mot de passe doit comporter au moins 8 caractères.",
+    newPwMax:
+      "Le nouveau mot de passe doit comporter au maximum 256 caractères.",
+    currentPwWrong: "Le mot de passe actuel est incorrect.",
+    newPwDifferent: "Le nouveau mot de passe doit être différent de l'actuel.",
+    headlineLong: "Le titre est trop long.",
+    locationLong: "La localisation est trop longue.",
+    linkedinLong: "L'URL LinkedIn est trop longue.",
+    linkedinScheme: "L'URL LinkedIn doit commencer par http(s)://.",
+    profileNotFound: "Profil introuvable.",
+    enterName: "Saisissez votre nom.",
+    nameLong: "Le nom est trop long.",
+    enterEmail: "Saisissez une adresse e-mail valide.",
+    emailLong: "L'adresse e-mail est trop longue.",
+    roleLong: "Le poste est trop long.",
+    companyLong: "Le nom de l'entreprise est trop long.",
+    chooseRelationship: "Choisissez comment vous avez travaillé ensemble.",
+    addRating: "Ajoutez une note.",
+    pleaseEnterName: "Veuillez saisir votre nom.",
+    pwMin: "Le mot de passe doit comporter au moins 8 caractères.",
+    pwMax: "Le mot de passe doit comporter au maximum 256 caractères.",
+    accountExists: "Un compte avec cette adresse e-mail existe déjà.",
+    confirmExpired: "Ce lien de confirmation a expiré.",
+    incorrectCredentials: "Adresse e-mail ou mot de passe incorrect.",
+    linkedinBool: "linkedin_matched doit être un booléen.",
+    emailLinkExpired:
+      "Ce lien a expiré. Connectez-vous et renvoyez-le depuis votre tableau de bord.",
+    duplicatePending:
+      "Vous avez déjà une recommandation en attente d’examen pour ce profil. Vérifiez votre e-mail pour la confirmer.",
+  },
+  email: {
+    confirmEndorsementSubject: (name: string) =>
+      `Confirmez votre recommandation de ${name}`,
+    confirmEndorsementText: (name: string, link: string, manageLink: string) =>
+      `Merci d'avoir recommandé ${name}. Confirmez votre adresse professionnelle pour vérifier votre recommandation :\n\n${link}\n\nVous avez changé d'avis ou n'êtes pas l'auteur ? Retirez-la ici :\n${manageLink}`,
+    confirmEndorsementHtml: (name: string, link: string, manageLink: string) =>
+      `<p>Merci d'avoir recommandé <strong>${name}</strong>.</p><p>Confirmez votre adresse professionnelle pour vérifier votre recommandation :</p><p><a href="${link}">Confirmer ma recommandation</a></p><p style="color:#666">Vous avez changé d'avis ou n'êtes pas l'auteur ? <a href="${manageLink}">Retirez-la ici</a>.</p>`,
+    resendEndorsementText: (name: string, link: string) =>
+      `Voici un nouveau lien pour confirmer votre recommandation de ${name} :\n\n${link}\n`,
+    resendEndorsementHtml: (name: string, link: string) =>
+      `<p>Voici un nouveau lien pour confirmer votre recommandation de <strong>${name}</strong> :</p><p><a href="${link}">Confirmer ma recommandation</a></p>`,
+    ownerSubject: "Confirmez votre e-mail pour MyVouch",
+    signupText: (link: string) =>
+      `Bienvenue sur MyVouch. Confirmez votre e-mail pour débloquer les signaux de recommandation vérifiés :\n\n${link}\n`,
+    signupHtml: (link: string) =>
+      `<p>Bienvenue sur MyVouch.</p><p>Confirmez votre e-mail pour débloquer les signaux de recommandation vérifiés :</p><p><a href="${link}">Confirmer mon e-mail</a></p>`,
+    ownerResendText: (link: string) =>
+      `Confirmez votre e-mail pour débloquer les signaux de recommandation vérifiés :\n\n${link}\n`,
+    ownerResendHtml: (link: string) =>
+      `<p>Confirmez votre e-mail pour débloquer les signaux de recommandation vérifiés :</p><p><a href="${link}">Confirmer mon e-mail</a></p>`,
+  },
+};
+
+export const messages: Record<Locale, Messages> = { en, fr };
+
+/** Resolve the catalog for a locale (server components index this directly). */
+export function getMessages(locale: Locale): Messages {
+  return messages[locale];
+}

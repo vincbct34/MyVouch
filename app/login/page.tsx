@@ -4,9 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Brandmark } from "@/components/Brandmark";
+import { useT } from "@/components/I18nProvider";
 
 export default function LoginPage() {
   const router = useRouter();
+  const m = useT().login;
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -22,7 +24,7 @@ export default function LoginPage() {
     });
     const json = await res.json();
     if (!res.ok) {
-      setError(json.error ?? "Something went wrong.");
+      setError(json.error ?? m.generic);
       setBusy(false);
       return;
     }
@@ -35,13 +37,13 @@ export default function LoginPage() {
       <div className="auth-card">
         <Brandmark size="lg" />
         <div>
-          <h1>Welcome back</h1>
-          <p className="sub">Log in to moderate your endorsement wall.</p>
+          <h1>{m.title}</h1>
+          <p className="sub">{m.sub}</p>
         </div>
         {error && <div className="form-error">{error}</div>}
         <form onSubmit={onSubmit}>
           <div className="field">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">{m.email}</label>
             <input
               className="input"
               id="email"
@@ -52,7 +54,7 @@ export default function LoginPage() {
             />
           </div>
           <div className="field">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">{m.password}</label>
             <input
               className="input"
               id="password"
@@ -63,11 +65,12 @@ export default function LoginPage() {
             />
           </div>
           <button className="btn btn-primary btn-lg" disabled={busy}>
-            {busy ? "Logging in…" : "Log in"}
+            {busy ? m.submitting : m.submit}
           </button>
         </form>
         <p className="auth-foot">
-          New to MyVouch? <Link href="/signup">Create your wall</Link>
+          {m.footPre}
+          <Link href="/signup">{m.footLink}</Link>
         </p>
       </div>
     </main>

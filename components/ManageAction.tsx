@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useT } from "./I18nProvider";
 
 type State =
   | { kind: "idle" }
@@ -26,6 +27,7 @@ export function ManageAction({
   ownerName: string;
   ownerSlug: string;
 }) {
+  const m = useT().manage;
   const [state, setState] = useState<State>({ kind: "idle" });
 
   async function withdraw() {
@@ -38,37 +40,31 @@ export function ManageAction({
       });
       if (!res.ok) {
         const json = await res.json().catch(() => ({}));
-        setState({
-          kind: "error",
-          message: json.error ?? "Something went wrong.",
-        });
+        setState({ kind: "error", message: json.error ?? m.generic });
         return;
       }
       setState({ kind: "done" });
     } catch {
-      setState({ kind: "error", message: "Network error. Please try again." });
+      setState({ kind: "error", message: m.network });
     }
   }
 
   if (state.kind === "done") {
     return (
       <div>
-        <h1>Endorsement withdrawn</h1>
-        <p className="sub">
-          Your endorsement of {ownerName} has been removed. It will no longer
-          appear anywhere on MyVouch.
-        </p>
+        <h1>{m.doneTitle}</h1>
+        <p className="sub">{m.doneBody(ownerName)}</p>
       </div>
     );
   }
 
   return (
     <div>
-      <h1>Manage your endorsement</h1>
+      <h1>{m.title}</h1>
       <p className="sub">
-        You wrote an endorsement of <strong>{ownerName}</strong> as{" "}
-        {reviewerName}. You can withdraw it at any time — this permanently
-        deletes it.
+        {m.descPre}
+        <strong>{ownerName}</strong>
+        {m.descPost(reviewerName)}
       </p>
       {state.kind === "error" && (
         <div className="form-error">{state.message}</div>
@@ -76,13 +72,13 @@ export function ManageAction({
       {state.kind === "confirm" ? (
         <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
           <button className="btn btn-rose btn-lg" onClick={withdraw}>
-            Yes, withdraw it
+            {m.confirmYes}
           </button>
           <button
             className="btn btn-ghost btn-lg"
             onClick={() => setState({ kind: "idle" })}
           >
-            Keep it
+            {m.keep}
           </button>
         </div>
       ) : (
@@ -92,11 +88,11 @@ export function ManageAction({
           disabled={state.kind === "busy"}
           onClick={() => setState({ kind: "confirm" })}
         >
-          Withdraw my endorsement
+          {m.withdraw}
         </button>
       )}
       <p style={{ marginTop: 16 }}>
-        <Link href={`/u/${ownerSlug}`}>View {ownerName}&rsquo;s wall</Link>
+        <Link href={`/u/${ownerSlug}`}>{m.viewWall(ownerName)}</Link>
       </p>
     </div>
   );
