@@ -671,7 +671,7 @@ p {
 
 @media (max-width: 720px) {
   .wrap {
-    padding-inline: 18px;
+    padding-inline: 20px;
   }
   .topnav nav.primary {
     display: none;
@@ -703,6 +703,20 @@ p {
   display: grid;
   gap: 26px;
   max-width: 760px;
+}
+@media (max-width: 640px) {
+  .landing-hero .inner {
+    padding: 56px 48px;
+    gap: 20px;
+  }
+}
+@media (max-width: 480px) {
+  .landing-hero .cta-row {
+    width: 100%;
+  }
+  .landing-hero .cta-row .btn {
+    width: 100%;
+  }
 }
 .landing-hero h1 {
   font-size: clamp(2.8rem, 5.6vw, 4.6rem);
@@ -758,6 +772,15 @@ p {
     grid-template-columns: 1fr;
   }
 }
+@media (max-width: 640px) {
+  .feature-grid {
+    padding: 48px 0;
+    gap: 16px;
+  }
+  .feature {
+    padding: 22px;
+  }
+}
 
 /* ---------- Auth ---------- */
 .auth-wrap {
@@ -781,6 +804,14 @@ p {
   border-radius: var(--r-xl);
   box-shadow: var(--shadow-lg);
 }
+@media (max-width: 480px) {
+  .auth-wrap {
+    padding: 32px 14px;
+  }
+  .auth-card {
+    padding: 26px 22px;
+  }
+}
 .auth-card h1 {
   font-size: 26px;
   letter-spacing: -0.03em;
@@ -788,7 +819,7 @@ p {
 .auth-card .sub {
   font-size: 15px;
   color: var(--ink-soft);
-  margin-top: -10px;
+  margin-top: 6px;
 }
 .auth-card form {
   display: flex;
@@ -891,10 +922,23 @@ p {
   }
 }
 @media (max-width: 640px) {
+  .profile-hero .grid {
+    padding: 36px 0 32px;
+  }
   .id-block {
     flex-direction: column;
     align-items: flex-start;
     text-align: left;
+    gap: 18px;
+  }
+  .id-block .avatar.xl {
+    width: 72px;
+    height: 72px;
+    font-size: 26px;
+  }
+  .stat-strip {
+    flex-wrap: wrap;
+    gap: 14px 24px;
   }
 }
 
@@ -975,6 +1019,13 @@ p {
 @media (max-width: 640px) {
   .masonry {
     columns: 1;
+    padding-bottom: 48px;
+  }
+  .review {
+    padding: 22px 22px 20px;
+  }
+  .review .body {
+    font-size: 17px;
   }
 }
 
@@ -1001,6 +1052,11 @@ p {
 @media (max-width: 640px) {
   .cta-band {
     grid-template-columns: 1fr;
+    padding: 28px 24px;
+    margin-bottom: 56px;
+  }
+  .cta-band .btn {
+    width: 100%;
   }
 }
 
@@ -1103,6 +1159,16 @@ p {
 @media (max-width: 560px) {
   .row-2 {
     grid-template-columns: 1fr;
+  }
+  .submit-main {
+    padding: 28px 16px 70px;
+  }
+  .form-card {
+    padding: 20px 18px 8px;
+    border-radius: var(--r-lg);
+  }
+  .submit-bar .btn {
+    width: 100%;
   }
 }
 
@@ -1257,6 +1323,7 @@ p {
 
 /* ---------- Admin / moderation dashboard ---------- */
 .admin-head {
+  padding: 20px;
   background: var(--ink);
   color: var(--paper);
 }
@@ -1267,13 +1334,82 @@ p {
   justify-content: space-between;
   gap: 18px;
 }
+.admin-shell {
+  position: relative;
+}
 .admin-head .badge {
   background: oklch(0.32 0.022 256);
   color: oklch(0.82 0.012 256);
   border: 0;
 }
+.admin-menu {
+  display: none;
+  position: relative;
+}
+.admin-menu summary {
+  list-style: none;
+}
+.admin-menu summary::-webkit-details-marker {
+  display: none;
+}
+.admin-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.admin-menu-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: min(88vw, 260px);
+  padding: 12px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: var(--shadow-lg);
+  display: grid;
+  gap: 8px;
+  z-index: 20;
+}
+.admin-menu-panel .btn {
+  width: 100%;
+  justify-content: flex-start;
+}
+.admin-menu-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 4px 2px;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+@media (max-width: 600px) {
+  .admin-head .bar {
+    height: auto;
+    padding: 14px 0 18px;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .admin-actions {
+    display: none;
+  }
+  .admin-menu {
+    display: block;
+    margin-left: auto;
+  }
+  .admin-head .center {
+    gap: 8px;
+  }
+}
+
 .admin-title {
   padding: 34px 0 8px;
+}
+@media (max-width: 560px) {
+  .admin-title {
+    padding: 24px 0 4px;
+  }
 }
 .admin-title h1 {
   font-size: clamp(1.8rem, 3.5vw, 2.4rem);
@@ -1584,6 +1720,20 @@ p {
     border-top: 1px solid var(--line);
   }
 }
+@media (max-width: 560px) {
+  .queue {
+    padding: 20px 0 60px;
+  }
+  .mod .lead {
+    padding: 20px;
+  }
+  .mod .side {
+    padding: 20px;
+  }
+  .mod .text {
+    font-size: 17px;
+  }
+}
 
 .empty-state {
   text-align: center;
@@ -1659,6 +1809,13 @@ p {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+@media (max-width: 560px) {
+  .share-box {
+    width: 100%;
+  }
 }
 .verify-banner {
   display: flex;

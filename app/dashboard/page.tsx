@@ -1,19 +1,13 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/session";
 import { getEndorsementsForOwner, getAuditLog } from "@/lib/db";
 import { appBaseUrl } from "@/lib/url";
-import { Brandmark } from "@/components/Brandmark";
-import { Avatar } from "@/components/Avatar";
+import { DashboardHeader } from "@/components/DashboardChrome";
 import { ModerationQueue } from "@/components/ModerationQueue";
 import { ProfileSettings } from "@/components/ProfileSettings";
 import { SecuritySettings } from "@/components/SecuritySettings";
 import { AuditLog } from "@/components/AuditLog";
-import {
-  CopyLink,
-  LogoutButton,
-  EmailVerifyBanner,
-} from "@/components/DashboardChrome";
+import { CopyLink, EmailVerifyBanner } from "@/components/DashboardChrome";
 
 export const metadata = { title: "Moderation queue" };
 
@@ -29,21 +23,7 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <header className="admin-head">
-        <div className="wrap bar">
-          <div className="center">
-            <Brandmark onDark href="/dashboard" />
-            <span className="badge">Admin</span>
-          </div>
-          <div className="center">
-            <Link href={`/u/${user.slug}`} className="btn btn-ghost btn-sm">
-              View public profile
-            </Link>
-            <LogoutButton />
-            <Avatar name={user.name} size="sm" />
-          </div>
-        </div>
-      </header>
+      <DashboardHeader user={user} />
 
       {!user.email_confirmed && <EmailVerifyBanner />}
 

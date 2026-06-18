@@ -1,7 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Brandmark } from "./Brandmark";
+import { Avatar } from "./Avatar";
 import { LinkIcon } from "./Icons";
 
 export function CopyLink({ url }: { url: string }) {
@@ -24,6 +27,21 @@ export function CopyLink({ url }: { url: string }) {
         {copied ? "Copied!" : "Copy link"}
       </button>
     </div>
+  );
+}
+
+function MenuIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="ic" aria-hidden="true">
+      <path
+        d="M4 7h16M4 12h16M4 17h16"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 
@@ -76,5 +94,50 @@ export function LogoutButton() {
     <button className="btn btn-ghost btn-sm" onClick={logout}>
       Log out
     </button>
+  );
+}
+
+export function DashboardHeader({
+  user,
+}: {
+  user: {
+    slug: string;
+    name: string;
+  };
+}) {
+  return (
+    <header className="admin-head">
+      <div className="wrap bar admin-shell">
+        <div className="center admin-brand">
+          <Brandmark onDark href="/dashboard" />
+          <span className="badge">Admin</span>
+        </div>
+
+        <div className="center admin-actions">
+          <Link href={`/u/${user.slug}`} className="btn btn-ghost btn-sm">
+            View public profile
+          </Link>
+          <LogoutButton />
+          <Avatar name={user.name} size="sm" />
+        </div>
+
+        <details className="admin-menu">
+          <summary className="btn btn-ghost btn-sm admin-menu-trigger">
+            Menu
+            <MenuIcon />
+          </summary>
+          <div className="admin-menu-panel">
+            <Link href={`/u/${user.slug}`} className="btn btn-ghost btn-sm">
+              View public profile
+            </Link>
+            <LogoutButton />
+            <div className="admin-menu-user">
+              <Avatar name={user.name} size="sm" />
+              <span>{user.name}</span>
+            </div>
+          </div>
+        </details>
+      </div>
+    </header>
   );
 }
