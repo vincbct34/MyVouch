@@ -9,7 +9,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <TopNav user={user} active="home" />
+      <TopNav user={user} />
 
       <section className="landing-hero">
         <div className="wrap inner">

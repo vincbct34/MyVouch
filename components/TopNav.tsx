@@ -6,7 +6,6 @@ import type { User } from "@/lib/db";
 /** Public-facing sticky top nav. Auth-aware action on the right. */
 export function TopNav({
   user,
-  active,
 }: {
   user: User | null;
   active?: "home" | "dashboard";
@@ -15,18 +14,6 @@ export function TopNav({
     <header className="topnav">
       <div className="wrap bar">
         <Brandmark />
-        <nav className="primary">
-          <Link href="/#how">How it works</Link>
-          <Link href="/#trust">Verification</Link>
-          {user && (
-            <Link
-              href="/dashboard"
-              className={active === "dashboard" ? "active" : ""}
-            >
-              Dashboard
-            </Link>
-          )}
-        </nav>
         <div className="center">
           {user ? (
             <Link href="/dashboard" aria-label="Your dashboard">
