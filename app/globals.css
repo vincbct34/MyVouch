@@ -1949,7 +1949,7 @@ p {
 
 /* ---------- Legal pages ---------- */
 .legal-main {
-  padding: 56px 0 72px;
+  padding: 56px 20px 72px;
 }
 .legal-doc {
   max-width: 680px;
