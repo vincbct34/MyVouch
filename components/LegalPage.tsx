@@ -3,7 +3,6 @@ import { getCurrentUser } from "@/lib/session";
 import { getLocale } from "@/lib/locale";
 import { getMessages } from "@/lib/i18n";
 import { TopNav } from "./TopNav";
-import { Footer } from "./Footer";
 
 type LegalKey = "legalNotice" | "privacy" | "terms";
 
@@ -30,7 +29,6 @@ export async function LegalPage({ which }: { which: LegalKey }) {
           </Link>
         </article>
       </main>
-      <Footer />
     </>
   );
 }

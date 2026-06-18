@@ -4,6 +4,7 @@ import { getLocale } from "@/lib/locale";
 import { getMessages } from "@/lib/i18n";
 import { I18nProvider } from "@/components/I18nProvider";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
+import { Footer } from "@/components/Footer";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -32,6 +33,7 @@ export default async function RootLayout({
       <body>
         <I18nProvider locale={locale}>
           {children}
+          <Footer />
           <LocaleSwitcher />
         </I18nProvider>
       </body>

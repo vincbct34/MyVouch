@@ -3,7 +3,6 @@ import { getCurrentUser } from "@/lib/session";
 import { getLocale } from "@/lib/locale";
 import { getMessages } from "@/lib/i18n";
 import { TopNav } from "@/components/TopNav";
-import { Footer } from "@/components/Footer";
 import { ShieldIcon, CheckIcon, LinkIcon } from "@/components/Icons";
 
 export default async function HomePage() {
@@ -68,8 +67,6 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
-      <Footer />
     </>
   );
 }

@@ -83,6 +83,9 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 img,
 svg {
@@ -1869,21 +1872,15 @@ p {
   font-size: 13.5px;
   color: var(--ink-soft);
 }
-.site-foot .foot-coffee {
+.site-foot .foot-bmc {
   display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ink);
-  text-decoration: none;
-  background: #ffdd00;
-  border: 1px solid oklch(0.86 0.16 95);
+  line-height: 0;
   border-radius: var(--r-sm);
-  padding: 6px 12px;
 }
-.site-foot .foot-coffee:hover {
-  background: oklch(0.92 0.18 98);
+.site-foot .foot-bmc img {
+  height: 40px;
+  width: auto;
+  display: block;
 }
 .site-foot .foot-nav {
   display: flex;

@@ -15,7 +15,6 @@ import { getLocale } from "@/lib/locale";
 import { getMessages } from "@/lib/i18n";
 import { avatarUrl } from "@/lib/ui";
 import { TopNav } from "@/components/TopNav";
-import { Footer } from "@/components/Footer";
 import { Avatar } from "@/components/Avatar";
 import { ProfileWall } from "@/components/ProfileWall";
 import { ShieldIcon, PinIcon, PlusIcon } from "@/components/Icons";
@@ -178,8 +177,6 @@ export default async function ProfilePage({
           </Link>
         </div>
       </div>
-
-      <Footer />
     </>
   );
 }
