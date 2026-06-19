@@ -1,6 +1,6 @@
 {
   "name": "myvouch",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "MyVouch — verified endorsements. Collect, verify, and publish trusted references.",
   "private": true,
   "scripts": {
