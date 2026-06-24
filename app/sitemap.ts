@@ -3,6 +3,11 @@ import { appBaseUrl } from "@/lib/url";
 import { LOCALES, DEFAULT_LOCALE } from "@/lib/i18n";
 import { listProfileSlugs } from "@/lib/db";
 
+// Read profile slugs from the DB at request time, not build time. The SQLite
+// volume isn't mounted during `next build`, so prerendering would query an empty
+// (or absent) database and bake a profile-less sitemap.
+export const dynamic = "force-dynamic";
+
 // Public, crawlable surface. Every page is locale-prefixed (/en, /fr), so each
 // path is emitted once per locale with hreflang alternates linking the set (plus
 // x-default → DEFAULT_LOCALE). lastmod on profiles tracks the wall's newest

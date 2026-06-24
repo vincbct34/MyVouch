@@ -242,6 +242,11 @@ function connect(): Database.Database {
   // app's myvouch.db in the project root.
   const dbPath =
     process.env.MYVOUCH_DB_PATH ?? path.join(process.cwd(), "myvouch.db");
+  // better-sqlite3 won't create missing parent directories. When the DB lives on
+  // a mounted volume (e.g. MYVOUCH_DB_PATH=/data/myvouch.db on Railway) the dir
+  // may not exist yet at first open — create it so the connection doesn't throw
+  // "Cannot open database because the directory does not exist".
+  fs.mkdirSync(path.dirname(dbPath), { recursive: true });
   const db = new Database(dbPath);
   db.pragma("journal_mode = WAL");
   db.pragma("busy_timeout = 5000");
