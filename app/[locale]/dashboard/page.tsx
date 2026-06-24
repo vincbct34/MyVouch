@@ -25,6 +25,7 @@ export default async function DashboardPage() {
   // sane bound). The public wall is the unbounded surface and pages separately.
   const endorsements = getEndorsementsForOwner(user.id, { limit: 500 });
   const vouchUrl = `${appBaseUrl()}/u/${user.slug}/vouch`;
+  const publicUrl = `${appBaseUrl()}/u/${user.slug}`;
 
   return (
     <>
@@ -40,7 +41,7 @@ export default async function DashboardPage() {
 
       <div className="wrap share-row">
         <CopyLink url={vouchUrl} />
-        <QrShare url={vouchUrl} />
+        <QrShare url={publicUrl} />
       </div>
 
       <ModerationQueue initial={endorsements} />

@@ -92,6 +92,29 @@ export function verifySessionToken(token: string): SessionClaims | null {
   return { userId: Number(userId), epoch: Number(epoch) };
 }
 
+/* ---------- API tokens (programmatic access) ---------- */
+
+// Human-recognisable prefix so a leaked token is greppable and self-identifying.
+const API_TOKEN_PREFIX = "mv_";
+
+/**
+ * Mint a fresh raw API token. 256 bits of entropy, shown to the owner exactly
+ * once at creation — only its hash is ever persisted (see hashApiToken).
+ */
+export function generateApiToken(): string {
+  return API_TOKEN_PREFIX + crypto.randomBytes(32).toString("base64url");
+}
+
+/**
+ * Hash an API token for storage and lookup. Tokens are full-entropy random, so a
+ * fast SHA-256 is the correct primitive here (scrypt's work factor is for
+ * low-entropy passwords and would only slow every authed request). We never
+ * persist the raw token, only this digest.
+ */
+export function hashApiToken(raw: string): string {
+  return crypto.createHash("sha256").update(raw).digest("hex");
+}
+
 export const sessionCookieOptions = {
   httpOnly: true,
   sameSite: "lax" as const,

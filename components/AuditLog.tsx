@@ -11,7 +11,9 @@ type ActionKey =
   | "delete"
   | "passwordChange"
   | "logoutAll"
-  | "emailChange";
+  | "emailChange"
+  | "tokenCreate"
+  | "tokenRevoke";
 
 const ACTION_KEYS: Record<string, ActionKey> = {
   "endorsement.approved": "approved",
@@ -21,6 +23,8 @@ const ACTION_KEYS: Record<string, ActionKey> = {
   "password.change": "passwordChange",
   "session.logout_all": "logoutAll",
   "email.change": "emailChange",
+  "token.create": "tokenCreate",
+  "token.revoke": "tokenRevoke",
 };
 
 /**

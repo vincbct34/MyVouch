@@ -23,12 +23,15 @@ export function CopyLink({ url }: { url: string }) {
   }
   const display = url.replace(/^https?:\/\//, "");
   return (
-    <div className="share-box">
-      <LinkIcon className="ic" />
-      <code>{display}</code>
-      <button className="btn btn-primary btn-sm" onClick={copy}>
-        {copied ? m.copied : m.copyLink}
-      </button>
+    <div className="share-box-and-info">
+      <div className="share-box">
+        <LinkIcon className="ic" />
+        <code>{display}</code>
+        <button className="btn btn-primary btn-sm" onClick={copy}>
+          {copied ? m.copied : m.copyLink}
+        </button>
+      </div>
+      <div className="share-info">{m.vouchLink}</div>
     </div>
   );
 }

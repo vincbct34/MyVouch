@@ -1796,6 +1796,12 @@ p {
 .share-row {
   padding-top: 26px;
 }
+.share-box-and-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
 .share-box {
   display: flex;
   align-items: center;
@@ -1815,6 +1821,10 @@ p {
   white-space: nowrap;
   flex: 1;
   min-width: 0;
+}
+.share-info {
+  font-size: 18px;
+  color: var(--ink-soft);
 }
 @media (max-width: 560px) {
   .share-box {
@@ -1928,8 +1938,9 @@ p {
 .qr-panel {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
+  text-align: center;
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: var(--r-md);
@@ -2162,6 +2173,57 @@ p {
   margin-left: auto;
   color: var(--ink-faint);
   white-space: nowrap;
+}
+
+/* API tokens panel (account page). */
+.token-reveal {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface-2, var(--white));
+}
+.token-value {
+  font-family: var(--mono);
+  font-size: 13px;
+  word-break: break-all;
+  color: var(--ink);
+  background: var(--surface-2, rgba(0, 0, 0, 0.04));
+  padding: 6px 8px;
+  border-radius: var(--r-sm, 6px);
+}
+.token-list {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.token-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid var(--line-soft);
+  padding-top: 10px;
+}
+.token-item:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+.token-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.token-name {
+  font-weight: 600;
+  color: var(--ink);
+  font-size: 14px;
+}
+.token-item .btn {
+  margin-left: auto;
 }
 
 /* Language switcher — fixed, present on every page via the root layout. */

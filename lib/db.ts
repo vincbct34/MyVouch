@@ -104,6 +104,40 @@ export function toPublicEndorsement(e: Endorsement): PublicEndorsement {
   };
 }
 
+/**
+ * Owner-facing view of an endorsement, served by the authenticated API
+ * (GET /api/me/endorsements). Carries everything the owner already sees in their
+ * dashboard — including reviewer_email and the pending/declined status — but
+ * strips the server-only secrets: confirm_token and manage_token must never
+ * leave the server, even to the account owner.
+ */
+export type OwnerEndorsement = Omit<
+  Endorsement,
+  "confirm_token" | "confirm_sent_at" | "manage_token"
+>;
+
+export function toOwnerEndorsement(e: Endorsement): OwnerEndorsement {
+  return {
+    id: e.id,
+    user_id: e.user_id,
+    reviewer_name: e.reviewer_name,
+    reviewer_email: e.reviewer_email,
+    reviewer_role: e.reviewer_role,
+    reviewer_company: e.reviewer_company,
+    reviewer_linkedin: e.reviewer_linkedin,
+    relationship: e.relationship,
+    rating: e.rating,
+    body: e.body,
+    strengths: e.strengths,
+    status: e.status,
+    email_confirmed: e.email_confirmed,
+    employer_overlap_verified: e.employer_overlap_verified,
+    linkedin_matched: e.linkedin_matched,
+    submitted_at: e.submitted_at,
+    resolved_at: e.resolved_at,
+  };
+}
+
 const globalForDb = globalThis as unknown as {
   __myvouchDb?: Database.Database;
 };
@@ -848,6 +882,75 @@ export function getAuditLog(userId: number, limit = 50): AuditEntry[] {
        WHERE user_id = ? ORDER BY id DESC LIMIT ?`,
     )
     .all(userId, limit) as AuditEntry[];
+}
+
+/* ---------------- API tokens ---------------- */
+
+/** A token's safe metadata. token_hash (the secret digest) is never selected. */
+export interface ApiToken {
+  id: number;
+  user_id: number;
+  name: string;
+  last_used_at: string | null;
+  created_at: string;
+}
+
+/** Create a personal API token, storing only its hash. Returns the new row id. */
+export function createApiToken(
+  userId: number,
+  name: string,
+  tokenHash: string,
+): number {
+  const info = db()
+    .prepare(
+      `INSERT INTO api_tokens (user_id, name, token_hash) VALUES (?, ?, ?)`,
+    )
+    .run(userId, name, tokenHash);
+  return Number(info.lastInsertRowid);
+}
+
+/** A user's tokens, newest first. Never returns the token_hash. */
+export function listApiTokens(userId: number): ApiToken[] {
+  return db()
+    .prepare(
+      `SELECT id, user_id, name, last_used_at, created_at FROM api_tokens
+       WHERE user_id = ? ORDER BY id DESC`,
+    )
+    .all(userId) as ApiToken[];
+}
+
+export function countApiTokens(userId: number): number {
+  const row = db()
+    .prepare(`SELECT COUNT(*) AS c FROM api_tokens WHERE user_id = ?`)
+    .get(userId) as { c: number };
+  return row.c;
+}
+
+/**
+ * Resolve the user behind a presented token hash and stamp last_used_at. Returns
+ * the full User (so Bearer auth yields the same identity as a cookie session),
+ * or undefined for an unknown/revoked token. The last_used_at write is the only
+ * side effect — a missing row touches nothing.
+ */
+export function getUserByApiTokenHash(tokenHash: string): User | undefined {
+  const row = db()
+    .prepare(`SELECT user_id AS userId FROM api_tokens WHERE token_hash = ?`)
+    .get(tokenHash) as { userId: number } | undefined;
+  if (!row) return undefined;
+  db()
+    .prepare(
+      `UPDATE api_tokens SET last_used_at = CURRENT_TIMESTAMP WHERE token_hash = ?`,
+    )
+    .run(tokenHash);
+  return getUserById(row.userId);
+}
+
+/** Revoke (hard-delete) one of a user's tokens. Owner-scoped; returns true if removed. */
+export function revokeApiToken(id: number, userId: number): boolean {
+  const info = db()
+    .prepare(`DELETE FROM api_tokens WHERE id = ? AND user_id = ?`)
+    .run(id, userId);
+  return info.changes > 0;
 }
 
 /* ---------------- Email outbox ---------------- */

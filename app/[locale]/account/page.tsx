@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/session";
-import { getAuditLog } from "@/lib/db";
+import { getAuditLog, listApiTokens } from "@/lib/db";
 import { avatarUrl } from "@/lib/ui";
 import { getLocale } from "@/lib/locale";
 import { getMessages } from "@/lib/i18n";
@@ -11,6 +11,7 @@ import {
   EmailVerifyBanner,
 } from "@/components/DashboardChrome";
 import { AccountPanels } from "@/components/AccountPanels";
+import { ApiTokens } from "@/components/ApiTokens";
 import { AuditLog } from "@/components/AuditLog";
 import { DangerZone } from "@/components/DangerZone";
 
@@ -27,6 +28,7 @@ export default async function AccountPage() {
   const locale = await getLocale();
   const m = getMessages(locale).account;
   const auditEntries = getAuditLog(user.id);
+  const apiTokens = listApiTokens(user.id);
 
   return (
     <>
@@ -62,6 +64,15 @@ export default async function AccountPage() {
               openToWork: !!user.open_to_work,
               avatarUrl: avatarUrl(user.slug, user.avatar_updated_at),
             }}
+          />
+
+          <ApiTokens
+            initial={apiTokens.map((t) => ({
+              id: t.id,
+              name: t.name,
+              last_used_at: t.last_used_at,
+              created_at: t.created_at,
+            }))}
           />
 
           <section className="account-card">

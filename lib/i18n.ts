@@ -285,7 +285,8 @@ const en = {
     hideQr: "Hide QR code",
     downloadQr: "Download PNG",
     qrAlt: "QR code for your share link",
-    qrCaption: "Scan to open your share link",
+    qrCaption: "This QR code lets you share your endorsements.",
+    vouchLink: "Share this link to collect endorsements",
   },
   wall: {
     filterAll: "All",
@@ -453,6 +454,23 @@ const en = {
     deleting: "Deleting…",
     deleteFail: "Couldn’t delete account.",
     cancel: "Cancel",
+    tokensTitle: "API tokens",
+    tokensIntro:
+      "Create a token to read your endorsements programmatically. Send it as an Authorization: Bearer header to GET /api/me/endorsements.",
+    tokenNamePlaceholder: "e.g. Personal export script",
+    tokenCreate: "Create token",
+    tokenCreating: "Creating…",
+    tokenCreateFail: "Couldn’t create token.",
+    tokenCopyHint: "Copy this token now — it won’t be shown again.",
+    tokenCopy: "Copy",
+    tokenCopied: "Copied",
+    tokenRevoke: "Revoke",
+    tokenRevoking: "Revoking…",
+    tokenRevokeFail: "Couldn’t revoke token.",
+    tokensEmpty: "No API tokens yet.",
+    tokenNeverUsed: "Never used",
+    tokenLastUsed: (when: string) => `Last used ${when}`,
+    tokenCreatedAt: (when: string) => `Created ${when}`,
   },
   confirmAction: {
     generic: "Something went wrong.",
@@ -511,6 +529,8 @@ const en = {
     passwordChange: "Changed password",
     logoutAll: "Signed out everywhere",
     emailChange: "Changed account email",
+    tokenCreate: "Created an API token",
+    tokenRevoke: "Revoked an API token",
   },
   relationshipLabels: {
     manager: "Manager",
@@ -626,6 +646,11 @@ const en = {
       "This link has expired. Sign in and resend it from your dashboard.",
     duplicatePending:
       "You already have an endorsement awaiting review for this profile. Check your email to confirm it.",
+    invalidToken: "Invalid or missing API token.",
+    tokenNameLong: "Token name is too long.",
+    tooManyTokens: "You’ve reached the maximum number of API tokens.",
+    tokenNotFound: "Token not found.",
+    tokenDefaultName: "API token",
   },
   email: {
     confirmEndorsementSubject: (name: string) =>
@@ -901,7 +926,8 @@ const fr: Messages = {
     hideQr: "Masquer le QR code",
     downloadQr: "Télécharger le PNG",
     qrAlt: "QR code de votre lien de partage",
-    qrCaption: "Scannez pour ouvrir votre lien de partage",
+    qrCaption: "Ce QRcode vous permet de partager vos recommandations.",
+    vouchLink: "Lien de recommandation",
   },
   wall: {
     filterAll: "Tous",
@@ -1073,6 +1099,23 @@ const fr: Messages = {
     deleting: "Suppression…",
     deleteFail: "Impossible de supprimer le compte.",
     cancel: "Annuler",
+    tokensTitle: "Jetons d’API",
+    tokensIntro:
+      "Créez un jeton pour lire vos recommandations par programmation. Envoyez-le dans un en-tête Authorization: Bearer vers GET /api/me/endorsements.",
+    tokenNamePlaceholder: "ex. Script d’export personnel",
+    tokenCreate: "Créer un jeton",
+    tokenCreating: "Création…",
+    tokenCreateFail: "Impossible de créer le jeton.",
+    tokenCopyHint: "Copiez ce jeton maintenant — il ne sera plus affiché.",
+    tokenCopy: "Copier",
+    tokenCopied: "Copié",
+    tokenRevoke: "Révoquer",
+    tokenRevoking: "Révocation…",
+    tokenRevokeFail: "Impossible de révoquer le jeton.",
+    tokensEmpty: "Aucun jeton d’API pour l’instant.",
+    tokenNeverUsed: "Jamais utilisé",
+    tokenLastUsed: (when: string) => `Dernière utilisation ${when}`,
+    tokenCreatedAt: (when: string) => `Créé ${when}`,
   },
   confirmAction: {
     generic: "Une erreur s’est produite.",
@@ -1131,6 +1174,8 @@ const fr: Messages = {
     passwordChange: "Mot de passe modifié",
     logoutAll: "Déconnexion partout",
     emailChange: "E-mail du compte modifié",
+    tokenCreate: "Jeton d’API créé",
+    tokenRevoke: "Jeton d’API révoqué",
   },
   relationshipLabels: {
     manager: "Manager",
@@ -1249,6 +1294,11 @@ const fr: Messages = {
       "Ce lien a expiré. Connectez-vous et renvoyez-le depuis votre tableau de bord.",
     duplicatePending:
       "Vous avez déjà une recommandation en attente d’examen pour ce profil. Vérifiez votre e-mail pour la confirmer.",
+    invalidToken: "Jeton d’API invalide ou manquant.",
+    tokenNameLong: "Le nom du jeton est trop long.",
+    tooManyTokens: "Vous avez atteint le nombre maximal de jetons d’API.",
+    tokenNotFound: "Jeton introuvable.",
+    tokenDefaultName: "Jeton d’API",
   },
   email: {
     confirmEndorsementSubject: (name: string) =>

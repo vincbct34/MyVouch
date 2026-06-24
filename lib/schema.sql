@@ -89,6 +89,21 @@ CREATE TABLE IF NOT EXISTS audit_log (
 CREATE INDEX IF NOT EXISTS idx_audit_user ON audit_log(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_email_confirm ON users(email_confirm_token);
 
+-- Personal API tokens for programmatic access (e.g. GET /api/me/endorsements).
+-- Only the SHA-256 digest of each token is stored; the raw value is shown once
+-- at creation. Revocation is a plain row delete (no epoch) — an absent row just
+-- fails the lookup. ON DELETE CASCADE removes a user's tokens with the account.
+CREATE TABLE IF NOT EXISTS api_tokens (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  -- SHA-256 hex of the raw token. UNIQUE both dedupes and gives the lookup index.
+  token_hash TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  last_used_at DATETIME,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_apitokens_user ON api_tokens(user_id);
+
 -- Durable email outbox. Confirmation/resend mails are enqueued here first, then
 -- sent best-effort out of the request path; a periodic sweep retries rows that
 -- failed or were never picked up, so a provider blip never silently loses a
